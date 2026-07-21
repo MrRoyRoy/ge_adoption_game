@@ -379,7 +379,7 @@ async function startServer() {
     console.log(`🚀 GE ADOPTION GAME SERVER IS ACTIVE`);
     console.log(`💻 Local URL: http://localhost:${PORT}`);
     console.log(`🔧 Port: ${PORT}`);
-    console.log(`🌍 Project: ${PROJECT_ID} | Region: ${LOCATION}`);
+    console.log(`🌍 Project: ${process.env.PROJECT_ID || 'ge-edu-demo'} | Region: ${process.env.LOCATION || 'global'}`);
     console.log(`=======================================================`);
   });
 }
