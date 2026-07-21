@@ -74,6 +74,7 @@ const roomId = urlParams.get('room');
 let masterImagesList = [];
 let roomPlayers = [];
 let selectedMasterIndex = 0;
+let activeMasterIndex = 0;
 
 // DOM Elements
 const roomCodeDisplay = document.getElementById('room-code-display');
@@ -206,7 +207,8 @@ function updateMasterPreview(index) {
 }
 
 // Listen to Incoming Room State from server
-socket.on('room-state', ({ status, activeMasterIndex, players }) => {
+socket.on('room-state', ({ status, activeMasterIndex: currentMaster, players }) => {
+  activeMasterIndex = currentMaster;
   roomPlayers = players;
   playerCountDisplay.textContent = players.length;
 
