@@ -3,6 +3,32 @@
    Handles real-time game coordination, state sync, and podium animations.
  */
 
+// Custom Fly-In Notification Toast Utility
+function showCustomNotification(message, type = 'info') {
+  let toast = document.getElementById('custom-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'custom-toast';
+    document.body.appendChild(toast);
+  }
+  
+  toast.className = `custom-notification ${type}`;
+  
+  let icon = '⚡';
+  if (type === 'success') icon = '✅';
+  if (type === 'error') icon = '❌';
+  
+  toast.innerHTML = `<span style="font-size: 1.2rem;">${icon}</span> <span>${message}</span>`;
+  
+  // Trigger transition
+  setTimeout(() => toast.classList.add('show'), 50);
+  
+  // Hide after 3 seconds
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 3500);
+}
+
 const socket = io();
 
 // Parse room ID from query parameter
@@ -40,15 +66,64 @@ const roundRoster = document.getElementById('round-roster');
 const endGameBtn = document.getElementById('end-game-btn');
 const resetRoundBtn = document.getElementById('reset-round-btn');
 
-// Initialize Admin Portal
-if (roomId) {
-  roomCodeDisplay.textContent = `ROOM CODE: ${roomId}`;
-  socket.emit('admin-join', roomId);
-  loadMasterImagesCatalog();
-} else {
-  alert('No Room Code provided. Returning to home page.');
-  window.location.href = '/';
+// Direct URL Passcode Protection Logic
+const gateOverlay = document.getElementById('admin-gate-overlay');
+const gatePasscodeField = document.getElementById('admin-gate-passcode');
+const gateErrorMsg = document.getElementById('gate-error-msg');
+const gateSubmitBtn = document.getElementById('gate-submit-btn');
+const gateCancelBtn = document.getElementById('gate-cancel-btn');
+
+function checkAdminGate() {
+  if (sessionStorage.getItem('isAdminAuthorized') === 'true') {
+    initAdminPortal();
+  } else {
+    gateOverlay.style.display = 'flex';
+    gatePasscodeField.focus();
+    
+    // Wire up events
+    gateSubmitBtn.addEventListener('click', verifyGatePasscode);
+    gateCancelBtn.addEventListener('click', () => {
+      window.location.href = '/';
+    });
+    gatePasscodeField.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        verifyGatePasscode();
+      }
+    });
+  }
 }
+
+function verifyGatePasscode() {
+  const passcode = gatePasscodeField.value.trim();
+  if (passcode === 'MrRoyRoy') {
+    sessionStorage.setItem('isAdminAuthorized', 'true');
+    gateOverlay.style.display = 'none';
+    initAdminPortal();
+  } else {
+    gateErrorMsg.style.display = 'block';
+    gatePasscodeField.style.borderColor = '#ff3366';
+    gatePasscodeField.classList.add('shake-anim');
+    setTimeout(() => {
+      gatePasscodeField.classList.remove('shake-anim');
+    }, 400);
+  }
+}
+
+function initAdminPortal() {
+  if (roomId) {
+    roomCodeDisplay.textContent = `ROOM CODE: ${roomId}`;
+    socket.emit('admin-join', roomId);
+    loadMasterImagesCatalog();
+  } else {
+    showCustomNotification('No Room Code provided. Returning to home page.', 'error');
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 2500);
+  }
+}
+
+// Start execution
+checkAdminGate();
 
 // Fetch 20 Master Images from endpoint
 async function loadMasterImagesCatalog() {
@@ -187,8 +262,10 @@ terminateBtn.addEventListener('click', () => {
 
 // Handle termination signal
 socket.on('room-terminated', () => {
-  alert('Room terminated. Redirecting to home.');
-  window.location.href = '/';
+  showCustomNotification('Room terminated. Redirecting to home...', 'error');
+  setTimeout(() => {
+    window.location.href = '/';
+  }, 2000);
 });
 
 // Reveal Leaderboard podium

@@ -11,6 +11,38 @@
   <!-- Embedded Confetti Canvas -->
   <canvas id="confetti-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100;"></canvas>
 
+  <!-- Direct URL Passcode Protection Overlay -->
+  <div id="admin-gate-overlay" class="modal-backdrop" style="display: none; background: rgba(4, 6, 12, 0.95); backdrop-filter: blur(20px);">
+    <div class="glass-panel modal-content" style="max-width: 440px; width: 90%; text-align: center; padding: 3rem;">
+      <div style="width: 70px; height: 70px; border-radius: 50%; background: rgba(0, 240, 255, 0.1); border: 1px solid var(--accent-cyan); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+        <span style="color: var(--accent-cyan); font-size: 2rem; font-weight: bold; font-family: 'Orbitron', sans-serif;">🛡️</span>
+      </div>
+      <h2 class="brand-font" style="font-size: 1.4rem; color: #fff; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,240,255,0.3);">
+        ADMINISTRATOR ACCESS
+      </h2>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.5;">
+        This page contains command and projector functions. Please verify your administrative passcode to proceed.
+      </p>
+      
+      <div class="input-group" style="margin-bottom: 2rem; text-align: left;">
+        <label for="admin-gate-passcode" class="brand-font" style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Passcode</label>
+        <input type="password" id="admin-gate-passcode" class="input-control" placeholder="••••••••" style="text-align: center; font-family: 'Orbitron', sans-serif; letter-spacing: 5px; font-weight: bold; border-color: rgba(0, 240, 255, 0.25);">
+        <p id="gate-error-msg" style="color: #ff3366; font-size: 0.75rem; font-family: 'Orbitron', sans-serif; text-transform: uppercase; letter-spacing: 1px; margin-top: 0.6rem; display: none; text-align: center;">
+          ⚡ Access Denied: Invalid Passcode
+        </p>
+      </div>
+      
+      <div style="display: flex; gap: 1rem;">
+        <button id="gate-cancel-btn" class="btn btn-outline" style="flex: 1; padding: 0.7rem;">
+          Return Home
+        </button>
+        <button id="gate-submit-btn" class="btn btn-cyan" style="flex: 1; padding: 0.7rem; box-shadow: 0 0 15px rgba(0,240,255,0.4);">
+          Authorize
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div class="container" style="max-width: 1200px;">
     <!-- Top Header Navigation -->
     <div class="header-bar">

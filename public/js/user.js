@@ -3,6 +3,32 @@
    Orchestrates prompt iterations, background submissions, HUD animations, and printable poster generation.
  */
 
+// Custom Fly-In Notification Toast Utility
+function showCustomNotification(message, type = 'info') {
+  let toast = document.getElementById('custom-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'custom-toast';
+    document.body.appendChild(toast);
+  }
+  
+  toast.className = `custom-notification ${type}`;
+  
+  let icon = '⚡';
+  if (type === 'success') icon = '✅';
+  if (type === 'error') icon = '❌';
+  
+  toast.innerHTML = `<span style="font-size: 1.2rem;">${icon}</span> <span>${message}</span>`;
+  
+  // Trigger transition
+  setTimeout(() => toast.classList.add('show'), 50);
+  
+  // Hide after 3.5 seconds
+  setTimeout(() => {
+    toast.classList.remove('show');
+  }, 3500);
+}
+
 const socket = io();
 
 // Parse room ID and username from parameters
@@ -25,13 +51,7 @@ const stateScanning = document.getElementById('state-scanning');
 const statePoster = document.getElementById('state-poster');
 
 const userPrompt = document.getElementById('user-prompt');
-const testGenerateBtn = document.getElementById('test-generate-btn');
 const submitPromptBtn = document.getElementById('submit-prompt-btn');
-
-const testImageCard = document.getElementById('test-image-card');
-const testImagePlaceholder = document.getElementById('test-image-placeholder');
-const testImagePreview = document.getElementById('test-image-preview');
-const testImageLoader = document.getElementById('test-image-loader');
 const lockedPromptDisplay = document.getElementById('locked-prompt-display');
 
 const scanningImageHolder = document.getElementById('scanning-image-holder');
@@ -42,6 +62,7 @@ const posterUserImg = document.getElementById('poster-user-img');
 const posterScoreValue = document.getElementById('poster-score-value');
 const posterCommentary = document.getElementById('poster-commentary');
 const posterSuggestions = document.getElementById('poster-suggestions');
+const posterScannerOverlay = document.getElementById('poster-scanner-overlay');
 
 const rubricStyle = document.getElementById('rubric-style');
 const rubricComposition = document.getElementById('rubric-composition');
@@ -59,8 +80,10 @@ if (roomId && username) {
   // Register with Socket Server
   socket.emit('player-join', { roomId, username });
 } else {
-  alert('Invalid configuration. Missing Room Code or Username.');
-  window.location.href = '/';
+  showCustomNotification('Invalid configuration. Missing Room Code or Username.', 'error');
+  setTimeout(() => {
+    window.location.href = '/';
+  }, 2500);
 }
 
 // 1. Success Connection Callback
@@ -78,15 +101,19 @@ socket.on('join-success', ({ roomStatus, activeMasterIndex: currentMaster, playe
     }
   } else if (roomStatus === 'REVEAL') {
     // If room is in reveal and player is late, redirect them to index
-    alert('Game is already in progress or revealing scores. Rejoining as spectator.');
-    window.location.href = '/';
+    showCustomNotification('Game is already in progress or revealing scores. Rejoining as spectator.', 'error');
+    setTimeout(() => {
+      window.location.href = '/';
+    }, 3000);
   }
 });
 
 // Error handling
 socket.on('error-msg', (msg) => {
-  alert(msg);
-  window.location.href = '/';
+  showCustomNotification(msg, 'error');
+  setTimeout(() => {
+    window.location.href = '/';
+  }, 2500);
 });
 
 // 2. Game Started Signal from Admin
@@ -94,69 +121,24 @@ socket.on('game-started', ({ activeMasterIndex: currentMaster }) => {
   activeMasterIndex = currentMaster;
   userPrompt.value = '';
   
-  // Reset preview panel
-  testImagePreview.src = '';
-  testImagePreview.style.display = 'none';
-  testImagePlaceholder.style.display = 'flex';
-  
   // Re-enable interactive elements
   userPrompt.disabled = false;
-  testGenerateBtn.disabled = false;
   submitPromptBtn.disabled = false;
 
   showSection('playing');
-});
-
-// 3. Click Test Generate (Private Sandbox)
-testGenerateBtn.addEventListener('click', async () => {
-  const prompt = userPrompt.value.trim();
-  if (!prompt) {
-    alert('Please enter a prompt first.');
-    return;
-  }
-
-  // Set visual loader state
-  testGenerateBtn.disabled = true;
-  submitPromptBtn.disabled = true;
-  testImagePlaceholder.style.display = 'none';
-  testImageLoader.style.display = 'block';
-
-  try {
-    const response = await fetch('/api/test-generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt })
-    });
-
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.error || 'Server error during test generation');
-
-    // Display generated image
-    testImagePreview.src = `data:image/jpeg;base64,${data.imageBase64}`;
-    testImagePreview.style.display = 'block';
-  } catch (err) {
-    alert(`Generation Failed: ${err.message}`);
-    testImagePlaceholder.style.display = 'flex';
-    testImagePreview.style.display = 'none';
-  } finally {
-    testImageLoader.style.display = 'none';
-    testGenerateBtn.disabled = false;
-    submitPromptBtn.disabled = false;
-  }
 });
 
 // 4. Submit & Lock Final Prompt
 submitPromptBtn.addEventListener('click', () => {
   const prompt = userPrompt.value.trim();
   if (!prompt) {
-    alert('Please write a prompt before submitting.');
+    showCustomNotification('Please write a prompt before submitting.', 'error');
     return;
   }
 
   if (confirm('Are you sure? Once submitted, your prompt is locked and cannot be edited.')) {
     lockedPromptDisplay.textContent = prompt;
     userPrompt.disabled = true;
-    testGenerateBtn.disabled = true;
     submitPromptBtn.disabled = true;
 
     // Send payload to background evaluator
@@ -183,11 +165,13 @@ socket.on(`player-reveal-${username}`, ({ score, prompt, userImage, evaluation }
   userFinalImage = userImage;
   userFinalEvaluation = evaluation;
   
-  // Wait 4 seconds for scanning laser bar sweeps to resolve dramatically before reveal!
+  // Wait 2.5 seconds on transition scanning screen, then load individual poster and scan live!
   setTimeout(() => {
     populateAndShowPoster(score, prompt, userImage, evaluation);
-  }, 4000);
+  }, 2500);
 });
+
+let isScanningAndRolling = false;
 
 function populateAndShowPoster(score, prompt, userImage, evaluation) {
   posterUsername.textContent = username.toUpperCase();
@@ -201,25 +185,82 @@ function populateAndShowPoster(score, prompt, userImage, evaluation) {
   rubricColor.textContent = `${evaluation.rubric.colorAndLighting}/25`;
   rubricSubject.textContent = `${evaluation.rubric.subjectAndAccuracy}/25`;
   
-  // Animate poster score dial from 0 to score
-  animateScoreCounter(score);
-
-  // Populate bullet suggestions
-  posterSuggestions.innerHTML = evaluation.suggestions.map(s => `<li>${escapeHTML(s)}</li>`).join('');
+  // Populate suggestions with key terms bolded
+  posterSuggestions.innerHTML = evaluation.suggestions.map(s => `<li>${highlightSuggestions(s)}</li>`).join('');
 
   showSection('poster');
+
+  // Trigger Dramatic Odometer Shuffle & Laser Scan directly on the Poster!
+  triggerDramaticResultScan(score);
 }
 
-function animateScoreCounter(targetScore) {
-  let count = 0;
-  posterScoreValue.textContent = '0';
+function highlightSuggestions(text) {
+  let safeText = escapeHTML(text);
   
-  const interval = setInterval(() => {
-    if (count >= targetScore) {
-      posterScoreValue.textContent = targetScore;
-      clearInterval(interval);
+  // List of keywords to automatically bold
+  const keywords = [
+    '35mm', 'octane render', 'unreal engine', 'isometric', 'cinematic', 'high-contrast', 
+    'bokeh', 'volumetric', 'golden hour', 'photorealistic', 'oil painting', 'minimalist',
+    'vector', 'anime', 'composition', 'depth of field', 'sunset lighting', 'vivid', 'minimalism',
+    'perspective', 'lighting', 'shading', 'digital art', 'watercolors', 'render'
+  ];
+  
+  // Bold keywords
+  keywords.forEach(word => {
+    const regex = new RegExp(`\\b(${word})\\b`, 'gi');
+    safeText = safeText.replace(regex, '<strong>$1</strong>');
+  });
+  
+  // Bold quotes
+  safeText = safeText.replace(/(['"])(.*?)\1/g, '<strong>$2</strong>');
+  
+  return safeText;
+}
+
+function triggerDramaticResultScan(targetScore) {
+  posterScannerOverlay.style.display = 'block';
+  isScanningAndRolling = true;
+  
+  // Rapid digit roll
+  const rollInterval = setInterval(() => {
+    if (isScanningAndRolling) {
+      posterScoreValue.textContent = Math.floor(Math.random() * 90) + 10;
     } else {
-      count += Math.ceil((targetScore - count) / 5) || 1;
+      clearInterval(rollInterval);
+    }
+  }, 60);
+
+  // Complete scan and stabilize score in 3.5 seconds
+  setTimeout(() => {
+    isScanningAndRolling = false;
+    posterScannerOverlay.style.display = 'none';
+    
+    // Stabilize smoothly to actual score
+    const currentVal = parseInt(posterScoreValue.textContent) || 0;
+    animateScoreCounter(currentVal, targetScore);
+    
+    // Bounce effect on lock
+    posterScoreValue.style.transform = 'scale(1.25)';
+    posterScoreValue.style.textShadow = '0 0 25px var(--accent-cyan)';
+    setTimeout(() => {
+      posterScoreValue.style.transform = 'scale(1)';
+      posterScoreValue.style.textShadow = 'var(--glow-cyan)';
+    }, 300);
+  }, 3500);
+}
+
+function animateScoreCounter(startVal, targetScore) {
+  let count = startVal;
+  
+  const stepInterval = setInterval(() => {
+    if (count === targetScore) {
+      clearInterval(stepInterval);
+    } else {
+      if (count < targetScore) {
+        count += Math.ceil((targetScore - count) / 4) || 1;
+      } else {
+        count -= Math.ceil((count - targetScore) / 4) || 1;
+      }
       posterScoreValue.textContent = count;
     }
   }, 40);

@@ -8,7 +8,7 @@
   <script src="/socket.io/socket.io.js"></script>
 </head>
 <body>
-  <div class="container" style="max-width: 600px;">
+  <div class="container" style="max-width: 1200px;">
     <!-- Top Header Navigation -->
     <div class="header-bar no-print">
       <div class="brand-font" style="font-size: 1.1rem; color: var(--accent-cyan); display: flex; align-items: center; gap: 0.5rem;">
@@ -43,43 +43,72 @@
 
       <!-- PHASE 2: PLAYING STATE (PROMPT CRAFTING) -->
       <section id="state-playing" style="display: none;">
-        <div class="glass-panel" style="margin-bottom: 2rem;">
-          <h2 class="brand-font" style="font-size: 1.3rem; color: var(--accent-cyan); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-            ✦ PROMPT WORKSPACE
-          </h2>
-          <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">
-            Write details on lighting, camera angle, and styles to reverse-engineer the projector's Master Image.
-          </p>
+        <div class="grid-2">
+          <!-- Left side: Enriched prompting workspace -->
+          <div class="glass-panel" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 420px; padding: 2rem;">
+            <div>
+              <h2 class="brand-font" style="font-size: 1.3rem; color: var(--accent-cyan); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                ✦ PROMPT WORKSPACE
+              </h2>
+              <p style="font-size: 0.85rem; margin-bottom: 2rem; color: var(--text-secondary);">
+                Input your prepared prompt description here to reverse-engineer the projector's Master Image. Specify lighting, styles, perspective and details.
+              </p>
 
-          <!-- Prompt Form Inputs -->
-          <div class="input-group">
-            <label for="user-prompt">Describe the Master Image</label>
-            <textarea id="user-prompt" class="input-control textarea-control" placeholder="Describe style, subjects, lighting (e.g. 'A high-contrast cinematic portrait of... on 35mm lens, volumetric sunset lighting...')"></textarea>
-          </div>
-
-          <!-- Prompt controls & test generation results -->
-          <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem;">
-            <button id="test-generate-btn" class="btn btn-outline" style="flex: 1;">
-              Test Generate
-            </button>
-            <button id="submit-prompt-btn" class="btn btn-cyan" style="flex: 1.2;">
-              Submit & Lock
-            </button>
-          </div>
-        </div>
-
-        <!-- Private test-generate visual area -->
-        <div class="glass-panel" style="padding: 1.5rem;">
-          <h3 class="brand-font" style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 1px;">
-            Test Generation Preview (Private)
-          </h3>
-          <div class="image-card" id="test-image-card" style="max-height: 350px;">
-            <div class="image-placeholder" id="test-image-placeholder">
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="lucide lucide-image" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
-              <p style="font-size: 0.8rem; padding: 0 1rem;">No test preview generated yet. Test as many times as you like before submitting.</p>
+              <!-- Prompt Form Inputs -->
+              <div class="input-group" style="margin-bottom: 2.5rem;">
+                <label for="user-prompt" class="brand-font" style="font-size: 0.8rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">Describe the Master Image</label>
+                <textarea id="user-prompt" class="input-control textarea-control" style="height: 180px; font-size: 0.95rem; line-height: 1.5; border-color: rgba(0, 240, 255, 0.15);" placeholder="Describe style, subjects, lighting (e.g. 'A high-contrast cinematic portrait of... on 35mm lens, volumetric sunset lighting...')"></textarea>
+              </div>
             </div>
-            <img src="" id="test-image-preview" style="display: none;">
-            <div class="scanner-overlay" id="test-image-loader"></div>
+
+            <!-- Submit trigger -->
+            <button id="submit-prompt-btn" class="btn btn-cyan" style="width: 100%; padding: 1rem 1.5rem; font-size: 1rem; box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);">
+              Submit & Lock Final Prompt
+            </button>
+          </div>
+
+          <!-- Right side: Game Rules Sidebar -->
+          <div class="glass-panel" style="display: flex; flex-direction: column; justify-content: space-between; padding: 2rem;">
+            <div>
+              <h2 class="brand-font" style="font-size: 1.2rem; color: var(--accent-purple); margin-bottom: 1rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                🎯 GAME INSTRUCTIONS
+              </h2>
+              <ul class="suggestion-bullets" style="margin-top: 0; padding-left: 0; list-style: none;">
+                <li style="margin-bottom: 1.2rem; display: flex; gap: 0.8rem; align-items: flex-start; font-size: 0.85rem; line-height: 1.4;">
+                  <span style="color: var(--accent-cyan); font-weight: bold;">[01]</span>
+                  <div>
+                    <strong style="color: var(--accent-cyan); display: block; margin-bottom: 0.2rem; font-family: 'Orbitron', sans-serif;">Observe the Target</strong> Study the Master Image projected on the central presenter screen.
+                  </div>
+                </li>
+                <li style="margin-bottom: 1.2rem; display: flex; gap: 0.8rem; align-items: flex-start; font-size: 0.85rem; line-height: 1.4;">
+                  <span style="color: var(--accent-cyan); font-weight: bold;">[02]</span>
+                  <div>
+                    <strong style="color: var(--accent-cyan); display: block; margin-bottom: 0.2rem; font-family: 'Orbitron', sans-serif;">Reverse Engineer</strong> Analyze stylistic genres, composition, camera lenses, lighting angles, colors, and subject positions.
+                  </div>
+                </li>
+                <li style="margin-bottom: 1.2rem; display: flex; gap: 0.8rem; align-items: flex-start; font-size: 0.85rem; line-height: 1.4;">
+                  <span style="color: var(--accent-cyan); font-weight: bold;">[03]</span>
+                  <div>
+                    <strong style="color: var(--accent-cyan); display: block; margin-bottom: 0.2rem; font-family: 'Orbitron', sans-serif;">Formulate Prompt</strong> Draft your descriptive prompt on your personal scratchpad (or other playgrounds).
+                  </div>
+                </li>
+                <li style="display: flex; gap: 0.8rem; align-items: flex-start; font-size: 0.85rem; line-height: 1.4;">
+                  <span style="color: var(--accent-purple); font-weight: bold;">[04]</span>
+                  <div>
+                    <strong style="color: var(--accent-purple); display: block; margin-bottom: 0.2rem; font-family: 'Orbitron', sans-serif;">Submit & Lock</strong> Copy/paste your finalized text into the prompt workspace on the left and submit!
+                  </div>
+                </li>
+              </ul>
+              
+              <div style="background: rgba(188, 0, 221, 0.05); border: 1px solid rgba(188, 0, 221, 0.25); border-radius: 8px; padding: 1.2rem; margin-top: 1.5rem;">
+                <h3 class="brand-font" style="font-size: 0.8rem; color: var(--accent-purple); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem;">
+                  💡 PROMPTING TIPS
+                </h3>
+                <p style="font-size: 0.8rem; color: var(--text-secondary); line-height: 1.5; margin: 0;">
+                  Avoid generic buzzwords like "beautiful" or "photorealistic". Be specific: use descriptors like <em style="color: #fff;">"isometric perspective"</em>, <em style="color: #fff;">"volumetric sunset rays"</em>, <em style="color: #fff;">"35mm focal lens"</em>, or <em style="color: #fff;">"expressionist oil canvas"</em> to earn maximum accuracy points!
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -146,8 +175,9 @@
             </div>
             <div>
               <p style="font-size: 0.75rem; font-family: 'Orbitron', sans-serif; text-transform: uppercase; margin-bottom: 0.5rem; text-align: center; color: var(--accent-cyan);">Your Generation</p>
-              <div class="image-card" style="aspect-ratio: 1/1; border-radius: 8px; border-color: var(--accent-cyan);">
-                <img src="" id="poster-user-img">
+              <div class="image-card" style="aspect-ratio: 1/1; border-radius: 8px; border-color: var(--accent-cyan); position: relative; overflow: hidden;">
+                <img src="" id="poster-user-img" style="width: 100%; height: 100%; object-fit: cover;">
+                <div class="scanner-overlay" id="poster-scanner-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10;"></div>
               </div>
             </div>
           </div>
@@ -200,7 +230,7 @@
 
           <!-- Poster Footer -->
           <div style="text-align: center; border-top: 1px solid var(--glass-border); padding-top: 1.5rem; color: var(--text-muted); font-size: 0.7rem;">
-            <p>GE Adoption Neural Arena • Powered by Google Gemini 1.5 Flash</p>
+            <p>GE Adoption Neural Arena • Powered by Google Gemini 3.5 Flash</p>
           </div>
           <div class="poster-watermark">CERTIFICATE: OF-AI-PROMPT-MASTERY</div>
         </div>
