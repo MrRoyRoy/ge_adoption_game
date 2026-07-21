@@ -49,6 +49,10 @@
 - [x] Simplified the printable poster layout to fit perfectly on a single physical/PDF page by removing the Rubric Breakdown and Prompt Enhancements sections, guarding JS variables to prevent any null ReferenceErrors.
 - [x] Removed the "Play Again" redirect button from the player certificate workspace to enforce administrative command control.
 - [x] Engineered the **Back to Game Selection** loop (`reset-to-lobby` socket listener), allowing administrators to clear round history and return to the master image lobby picker securely.
+- [x] Replaced the 2-column detailed review layout with a premium 3-column balanced grid centering the active Master Image blueprint card, and made the master target fully zoom-expandable inside lightboxes.
+- [x] Integrated SVG warning placeholders across competitor cards and lightbox overlays to represent unsubmitted players seamlessly without broken image links.
+- [x] Eradicated hover-scaling clipping bugs inside scrolling grid columns by applying relative positioning and hover z-indices on image items.
+- [x] Streamlined the active arena status panel on the active playing screen, shrinking text prompts to highlight numeric progress counters and primary scoring buttons.
 
 ### Active/Next Tasks
 - [ ] Monitor live Cloud Run server telemetry and user engagement.

@@ -150,30 +150,30 @@
           </div>
 
           <!-- Right side: Progress tracking, submissions indicator -->
-          <div class="glass-panel" style="display: flex; flex-direction: column; justify-content: space-between;">
+          <div class="glass-panel" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1rem;">
             <div>
-              <h2 class="brand-font" style="font-size: 1.3rem; color: var(--accent-cyan); margin-bottom: 0.5rem;">
+              <h2 class="brand-font" style="font-size: 1rem; color: var(--accent-cyan); margin-bottom: 0.3rem;">
                 ✦ ARENA STATUS
               </h2>
-              <p style="font-size: 0.85rem; margin-bottom: 2rem;">
-                Competitors are currently crafting prompts on their devices. Waiting for lock submissions.
+              <p style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.3;">
+                Waiting for competitor prompt locks.
               </p>
 
               <!-- Central progress dial -->
-              <div style="text-align: center; margin-bottom: 2rem;">
-                <div style="font-family: 'Orbitron', sans-serif; font-size: 4rem; font-weight: 900; color: var(--accent-cyan); line-height: 1; text-shadow: var(--glow-cyan);">
-                  <span id="submitted-count">0</span><span style="color: var(--text-muted); font-size: 2rem;">/</span><span id="total-count" style="color: var(--text-muted); font-size: 2.5rem;">0</span>
+              <div style="text-align: center; margin-bottom: 1.5rem;">
+                <div style="font-family: 'Orbitron', sans-serif; font-size: 3rem; font-weight: 900; color: var(--accent-cyan); line-height: 1; text-shadow: var(--glow-cyan);">
+                  <span id="submitted-count">0</span><span style="color: var(--text-muted); font-size: 1.5rem;">/</span><span id="total-count" style="color: var(--text-muted); font-size: 1.8rem;">0</span>
                 </div>
-                <p style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px; color: var(--text-secondary); margin-top: 0.5rem;">PROMPTS SUBMITTED & LOCKED</p>
+                <p style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-top: 0.3rem;">SUBMITTED</p>
               </div>
 
               <!-- List of players in round, colored by submission state -->
-              <div id="round-roster" class="player-list" style="margin-bottom: 1.5rem; max-height: 180px; overflow-y: auto; padding-right: 0.5rem;">
+              <div id="round-roster" class="player-list" style="margin-bottom: 1rem; max-height: 140px; overflow-y: auto; padding-right: 0.2rem;">
                 <!-- badgess will update in real time -->
               </div>
             </div>
 
-            <button id="end-game-btn" class="btn btn-cyan" style="width: 100%;">
+            <button id="end-game-btn" class="btn btn-cyan" style="width: 100%; padding: 0.6rem; font-size: 0.8rem;">
               End Submissions & Score Round
             </button>
           </div>
@@ -246,68 +246,73 @@
           </p>
         </div>
 
-        <div style="display: flex; gap: 1.5rem; margin-bottom: 2rem;">
-          <!-- Left side: Master Image, Target Characteristics and Pro Tips (55% width) -->
-          <div class="glass-panel" style="flex: 1.2; padding: 2rem;">
-            <h2 class="brand-font" style="font-size: 1.2rem; color: var(--accent-purple); margin-bottom: 1.2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">
-              🎯 MASTER IMAGE BLUEPRINT
-            </h2>
-            <div class="image-card" style="height: 320px; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; margin-bottom: 1.5rem; border: 1px solid var(--glass-border);">
-              <img src="" id="gallery-master-img" style="width: 100%; height: 100%; object-fit: contain;">
-            </div>
-
-            <!-- Target Characteristics (Prompt blueprint) -->
-            <div style="background: rgba(0,0,0,0.3); padding: 1.2rem; border-radius: 8px; border: 1px solid var(--glass-border); margin-bottom: 1.5rem;">
-              <p style="font-size: 0.75rem; font-family: 'Orbitron', sans-serif; color: var(--accent-cyan); text-transform: uppercase; margin-bottom: 0.4rem; letter-spacing: 1px;">Target Characteristics (Blueprint Prompt)</p>
-              <p id="gallery-master-desc" style="font-size: 0.85rem; font-style: italic; line-height: 1.4; color: #fff; margin: 0;"></p>
-            </div>
-
-            <!-- Short & Clear Pro Tips -->
-            <div style="background: rgba(0, 240, 255, 0.03); border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 8px; padding: 1.2rem;">
-              <h3 class="brand-font" style="font-size: 0.85rem; color: var(--accent-cyan); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
-                💡 IMAGE GENERATION PRO-TIPS
+        <div style="display: flex; gap: 1.5rem; margin-bottom: 2rem; min-height: 580px;">
+          <!-- Left Panel: Pro Tips & Instructions (30% width) -->
+          <div class="glass-panel" style="flex: 0.9; padding: 1.8rem; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <h3 class="brand-font" style="font-size: 1rem; color: var(--accent-cyan); margin-bottom: 1.2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                💡 GENERATION TIPS
               </h3>
               <ul class="suggestion-bullets" style="padding-left: 0; margin: 0; list-style: none;">
-                <li style="margin-bottom: 0.8rem; font-size: 0.8rem; line-height: 1.4; display: flex; gap: 0.5rem;">
+                <li style="margin-bottom: 0.8rem; font-size: 0.75rem; line-height: 1.4; display: flex; gap: 0.4rem;">
                   <span style="color: var(--accent-cyan);">✦</span>
-                  <div><strong>Specify Camera & Perspective:</strong> Declare lenses (<em>"85mm focal lens"</em>) or camera orientations (<em>"isometric perspective"</em>, <em>"high-angle layout"</em>) instead of letting the AI guess.</div>
+                  <div><strong>Camera Specs:</strong> Specify focal lenses (<em>"85mm lens"</em>) or angles (<em>"isometric perspective"</em>).</div>
                 </li>
-                <li style="margin-bottom: 0.8rem; font-size: 0.8rem; line-height: 1.4; display: flex; gap: 0.5rem;">
+                <li style="margin-bottom: 0.8rem; font-size: 0.75rem; line-height: 1.4; display: flex; gap: 0.4rem;">
                   <span style="color: var(--accent-cyan);">✦</span>
-                  <div><strong>Describe Precise Lighting Settings:</strong> Anchor atmosphere with explicit lighting setups (<em>"volumetric sunset rays"</em>, <em>"high-contrast chiaroscuro"</em>, <em>"cinematic bokeh glows"</em>).</div>
+                  <div><strong>Lighting:</strong> Describe setups (<em>"volumetric sunset rays"</em>, <em>"high-contrast chiaroscuro"</em>).</div>
                 </li>
-                <li style="margin-bottom: 0.8rem; font-size: 0.8rem; line-height: 1.4; display: flex; gap: 0.5rem;">
+                <li style="margin-bottom: 0.8rem; font-size: 0.75rem; line-height: 1.4; display: flex; gap: 0.4rem;">
                   <span style="color: var(--accent-cyan);">✦</span>
-                  <div><strong>Leverage Explicit Styles & Mediums:</strong> State visual styles directly (<em>"hyper-detailed 3D octane render"</em>, <em>"expressionist oil paint canvas"</em>, <em>"vintage Polaroid snapshot"</em>).</div>
+                  <div><strong>Style & Mediums:</strong> State mediums (<em>"3D octane render"</em>, <em>"expressionist oil paint"</em>).</div>
                 </li>
-                <li style="font-size: 0.8rem; line-height: 1.4; display: flex; gap: 0.5rem;">
+                <li style="font-size: 0.75rem; line-height: 1.4; display: flex; gap: 0.4rem;">
                   <span style="color: var(--accent-cyan);">✦</span>
-                  <div><strong>Avoid Generic Adjectives:</strong> Ditch words like <em>"beautiful"</em>, <em>"photorealistic"</em>, or <em>"perfect"</em>. Specify texture, materials, and concrete object details to drive realism.</div>
+                  <div><strong>Ditch Adjectives:</strong> Ditch words like <em>"beautiful"</em> or <em>"perfect"</em>. Describe textures instead.</div>
                 </li>
               </ul>
             </div>
+            
+            <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; border: 1px solid var(--glass-border); margin-top: 1.5rem;">
+              <p style="font-size: 0.7rem; font-family: 'Orbitron', sans-serif; color: var(--accent-cyan); text-transform: uppercase; margin-bottom: 0.3rem; letter-spacing: 1px;">Characteristics Blueprint</p>
+              <p id="gallery-master-desc" style="font-size: 0.8rem; font-style: italic; line-height: 1.3; color: #fff; margin: 0;"></p>
+            </div>
           </div>
 
-          <!-- Right side: Grid gallery of all submitted players' creations (45% width) -->
-          <div class="glass-panel" style="flex: 1; padding: 2rem; display: flex; flex-direction: column; justify-content: space-between;">
+          <!-- Center Panel: The Target Master Image (35% width) -->
+          <div class="glass-panel text-center" style="flex: 1.2; padding: 1.8rem; display: flex; flex-direction: column; justify-content: space-between; align-items: center;">
+            <div style="width: 100%;">
+              <h2 class="brand-font" style="font-size: 1.1rem; color: var(--accent-purple); margin-bottom: 1.2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; text-align: left;">
+                🎯 MASTER TARGET BLUEPRINT
+              </h2>
+              <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1rem; text-align: left;">
+                Click the master target image below to enlarge and view complete prompt descriptors.
+              </p>
+              <div class="image-card" id="gallery-master-card" style="height: 330px; width: 100%; border: 2px solid var(--glass-border); cursor: pointer; transition: all 0.3s ease-in-out;">
+                <img src="" id="gallery-master-img" style="width: 100%; height: 100%; object-fit: contain;">
+              </div>
+            </div>
+            
+            <button id="gallery-reset-btn" class="btn btn-purple" style="width: 100%; margin-top: 1.5rem; padding: 0.8rem;">
+              Back to Game Selection
+            </button>
+          </div>
+
+          <!-- Right Panel: Arena Galleries (35% width) -->
+          <div class="glass-panel" style="flex: 1.1; padding: 1.8rem; display: flex; flex-direction: column; justify-content: space-between;">
             <div>
-              <h2 class="brand-font" style="font-size: 1.2rem; color: var(--accent-cyan); margin-bottom: 1.2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">
+              <h2 class="brand-font" style="font-size: 1.1rem; color: var(--accent-cyan); margin-bottom: 1.2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">
                 🎨 ARENA GALLERIES
               </h2>
-              <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
-                Click any competitor card below to expand their synthesized image and full prompt blueprints.
+              <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1.2rem;">
+                Click any card to expand synthesized images and colleague scoring metrics.
               </p>
               
               <!-- Responsive Grid container -->
-              <div id="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 1rem; max-height: 520px; overflow-y: auto; padding-right: 0.5rem;">
+              <div id="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.8rem; max-height: 400px; overflow-y: auto; padding: 0.4rem; border: 1px solid rgba(255,255,255,0.03); border-radius: 6px; background: rgba(0,0,0,0.15);">
                 <!-- Filled dynamically -->
               </div>
             </div>
-
-            <!-- Initiate Next Round trigger -->
-            <button id="gallery-reset-btn" class="btn btn-purple" style="width: 100%; margin-top: 1.5rem; padding: 0.9rem;">
-              Back to Game Selection
-            </button>
           </div>
         </div>
       </section>

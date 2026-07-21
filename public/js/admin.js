@@ -324,6 +324,10 @@ socket.on('room-gallery', ({ players }) => {
   populateAndShowGallery(players, activeMaster);
 });
 
+socket.on('room-reset-lobby', () => {
+  showSection('lobby');
+});
+
 // Render the interactive deep-dive gallery
 function populateAndShowGallery(players, activeMaster) {
   showSection('gallery');
@@ -331,9 +335,32 @@ function populateAndShowGallery(players, activeMaster) {
   const masterImg = document.getElementById('gallery-master-img');
   const masterDesc = document.getElementById('gallery-master-desc');
   
-  if (activeMaster) {
+  if (activeMaster && masterImg) {
     masterImg.src = `assets/master-images/${activeMaster.filename}`;
     masterDesc.textContent = activeMaster.prompt;
+    
+    // Remove any previous listener on the master card
+    const masterCard = document.getElementById('gallery-master-card');
+    if (masterCard) {
+      const newMasterCard = masterCard.cloneNode(true);
+      masterCard.parentNode.replaceChild(newMasterCard, masterCard);
+      
+      newMasterCard.addEventListener('click', () => {
+        openLightbox('MASTER TARGET BLUEPRINT', '100', `assets/master-images/${activeMaster.filename}`, activeMaster.prompt);
+      });
+      
+      // Hover zoom styling for master card
+      newMasterCard.addEventListener('mouseenter', () => {
+        newMasterCard.style.borderColor = 'var(--accent-purple)';
+        newMasterCard.style.boxShadow = '0 0 20px rgba(188, 19, 254, 0.4)';
+        newMasterCard.style.transform = 'scale(1.02)';
+      });
+      newMasterCard.addEventListener('mouseleave', () => {
+        newMasterCard.style.borderColor = 'var(--glass-border)';
+        newMasterCard.style.boxShadow = 'none';
+        newMasterCard.style.transform = 'scale(1)';
+      });
+    }
   }
   
   const grid = document.getElementById('gallery-grid');
@@ -343,13 +370,21 @@ function populateAndShowGallery(players, activeMaster) {
     players.forEach(p => {
       const card = document.createElement('div');
       card.className = 'glass-panel';
-      card.style.cssText = 'padding: 0.6rem; border-radius: 8px; cursor: pointer; border-color: rgba(255,255,255,0.08); transition: all 0.2s ease-in-out;';
+      card.style.cssText = 'padding: 0.6rem; border-radius: 8px; cursor: pointer; border-color: rgba(255,255,255,0.08); transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); position: relative; z-index: 1;';
       
-      const imgUrl = p.user_image_base64 ? `data:image/jpeg;base64,${p.user_image_base64}` : 'assets/placeholder.jpg';
+      const hasImage = !!p.user_image_base64;
+      const imgUrl = hasImage ? `data:image/jpeg;base64,${p.user_image_base64}` : '';
+      
+      const mediaHtml = hasImage 
+        ? `<img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover;">`
+        : `<div style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #080c14; color: var(--text-muted); gap: 0.4rem; padding: 0.5rem;">
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="#ff3366" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" class="lucide lucide-image-off" viewBox="0 0 24 24"><line x1="2" x2="22" y1="2" y2="22"/><path d="M10.41 10.41a2 2 0 1 1-2.83-2.83"/><path d="M13.5 13.5 16 11l4.5 4.5"/><path d="M21 21H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2m4 0h10a2 2 0 0 1 2 2v12m-3.5-3.5L16 11"/></svg>
+             <span style="font-size: 0.6rem; font-family: 'Orbitron', sans-serif; font-weight: bold; color: #ff3366; letter-spacing: 0.5px; text-align: center; line-height: 1.2;">FAILED TO SUBMIT</span>
+           </div>`;
       
       card.innerHTML = `
         <div style="aspect-ratio: 1/1; border-radius: 6px; overflow: hidden; border: 1px solid var(--glass-border); background: #000; margin-bottom: 0.5rem;">
-          <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover;">
+          ${mediaHtml}
         </div>
         <div style="text-align: center;">
           <div style="font-size: 0.75rem; font-weight: bold; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHTML(p.username)}</div>
@@ -359,15 +394,19 @@ function populateAndShowGallery(players, activeMaster) {
       
       card.addEventListener('mouseenter', () => {
         card.style.borderColor = 'var(--accent-cyan)';
-        card.style.transform = 'scale(1.03)';
+        card.style.transform = 'scale(1.05)';
+        card.style.boxShadow = '0 0 15px rgba(0, 240, 255, 0.4)';
+        card.style.zIndex = '10';
       });
       card.addEventListener('mouseleave', () => {
         card.style.borderColor = 'rgba(255,255,255,0.08)';
         card.style.transform = 'scale(1)';
+        card.style.boxShadow = 'none';
+        card.style.zIndex = '1';
       });
       
       card.addEventListener('click', () => {
-        openLightbox(p.username, p.score, imgUrl, p.submitted_prompt);
+        openLightbox(p.username, p.score, imgUrl, p.submitted_prompt || '(No prompt submitted)');
       });
       
       grid.appendChild(card);
@@ -387,7 +426,28 @@ function openLightbox(creator, score, imgUrl, prompt) {
   if (!lightbox) return;
   lightboxCreator.textContent = creator.toUpperCase();
   lightboxScore.textContent = `${score} PTS`;
-  lightboxImg.src = imgUrl;
+  
+  const lightboxImgContainer = lightboxImg.parentNode;
+  
+  if (imgUrl) {
+    lightboxImg.src = imgUrl;
+    lightboxImg.style.display = 'block';
+    const placeholder = lightboxImgContainer.querySelector('.lightbox-placeholder');
+    if (placeholder) placeholder.remove();
+  } else {
+    lightboxImg.style.display = 'none';
+    let placeholder = lightboxImgContainer.querySelector('.lightbox-placeholder');
+    if (!placeholder) {
+      placeholder = document.createElement('div');
+      placeholder.className = 'lightbox-placeholder';
+      placeholder.style.cssText = 'display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; color: #ff3366;';
+      placeholder.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" class="lucide lucide-image-off" viewBox="0 0 24 24"><line x1="2" x2="22" y1="2" y2="22"/><path d="M10.41 10.41a2 2 0 1 1-2.83-2.83"/><path d="M13.5 13.5 16 11l4.5 4.5"/><path d="M21 21H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2m4 0h10a2 2 0 0 1 2 2v12m-3.5-3.5L16 11"/></svg>
+        <span style="font-size: 0.8rem; font-family: 'Orbitron', sans-serif; font-weight: bold; letter-spacing: 1px;">NO IMAGE SUBMISSION DETECTED</span>
+      `;
+      lightboxImgContainer.appendChild(placeholder);
+    }
+  }
   lightboxPrompt.textContent = prompt || 'No prompt locked in time.';
   lightbox.style.display = 'flex';
 }
