@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GE Adoption Game - Neural Prompt Arena</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container" style="max-width: 800px; padding-top: 5rem;">
+    <!-- Brand Hero Section -->
+    <div style="text-align: center; margin-bottom: 3rem;">
+      <h1 class="brand-font" style="font-size: 3rem; margin-bottom: 0.5rem; text-shadow: 0 0 20px rgba(0, 240, 255, 0.4);">
+        GE ADOPTION
+      </h1>
+      <p class="brand-font" style="font-size: 1.1rem; color: var(--accent-purple); text-transform: uppercase; letter-spacing: 4px; margin-bottom: 1.5rem;">
+        Neural Prompt Arena
+      </p>
+      <p style="font-size: 1rem; max-width: 600px; margin: 0 auto;">
+        Welcome to the premium GenAI Prompting Challenge. Reverse-engineer high-fidelity Master Images using descriptive keywords. Compete, refine, and master prompt engineering!
+      </p>
+    </div>
+
+    <div class="grid-2">
+      <!-- User / Player Entrance Panel -->
+      <div class="glass-panel" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <h2 class="brand-font" style="font-size: 1.4rem; color: var(--accent-cyan); margin-bottom: 1rem;">
+            JOIN GAME
+          </h2>
+          <p style="font-size: 0.9rem; margin-bottom: 1.5rem;">
+            Enter the room number and input your custom display name to compete in the active prompting arena.
+          </p>
+          
+          <div class="input-group">
+            <label for="room-code">Room Code</label>
+            <input type="text" id="room-code" class="input-control" placeholder="e.g. 1234" maxlength="6" style="text-align: center; font-family: 'Orbitron', sans-serif; letter-spacing: 2px;">
+          </div>
+          
+          <div class="input-group" style="margin-bottom: 2rem;">
+            <label for="username">Username</label>
+            <input type="text" id="username" class="input-control" placeholder="e.g. PromptMaster" maxlength="20">
+          </div>
+        </div>
+        
+        <button id="join-btn" class="btn btn-cyan" style="width: 100%;">
+          Enter Arena
+        </button>
+      </div>
+
+      <!-- Admin / Command Portal -->
+      <div class="glass-panel" style="display: flex; flex-direction: column; justify-content: space-between;">
+        <div>
+          <h2 class="brand-font" style="font-size: 1.4rem; color: var(--accent-purple); margin-bottom: 1rem;">
+            ADMIN COMMAND
+          </h2>
+          <p style="font-size: 0.9rem; margin-bottom: 1.5rem;">
+            Initialize a brand-new game room. Host sessions, select from your active games, present master libraries on the projector, and crown the prompt engineering champions.
+          </p>
+          
+          <div style="margin-bottom: 1.5rem;">
+            <label class="brand-font" style="font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.5rem; text-transform: uppercase;">
+              Active Rooms (last 24h)
+            </label>
+            <select id="active-rooms-select" class="input-control" style="font-family: 'Orbitron', sans-serif;">
+              <option value="">-- Select Active Room --</option>
+            </select>
+          </div>
+        </div>
+        
+        <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 1rem;">
+          <button id="select-room-btn" class="btn btn-outline" style="width: 100%;" disabled>
+            Resume Selected Room
+          </button>
+          <button id="create-room-btn" class="btn btn-purple" style="width: 100%;">
+            Create New Room
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Info Footer -->
+    <div style="text-align: center; margin-top: 4rem; color: var(--text-muted); font-size: 0.8rem;">
+      <p>GE Adoption Game • Created with Vertex AI Imagen 3 & Gemini Multimodal • Project ge-edu-demo</p>
+      <p style="margin-top: 0.5rem;">Each room and its uploaded/generated game resources will be automatically purged after 24 hours.</p>
+    </div>
+  </div>
+
+  <script>
+    // Fetch active rooms on page load
+    async function loadActiveRooms() {
+      try {
+        const response = await fetch('/api/rooms');
+        if (!response.ok) throw new Error('Failed to fetch rooms');
+        const rooms = await response.json();
+        
+        const select = document.getElementById('active-rooms-select');
+        const resumeBtn = document.getElementById('select-room-btn');
+        
+        // Clear except first
+        select.innerHTML = '<option value="">-- Select Active Room --</option>';
+        
+        if (rooms && rooms.length > 0) {
+          rooms.forEach(room => {
+            const opt = document.createElement('option');
+            opt.value = room.id;
+            opt.textContent = `Room ${room.id} (${room.status})`;
+            select.appendChild(opt);
+          });
+          
+          select.addEventListener('change', () => {
+            resumeBtn.disabled = !select.value;
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching active rooms:', err);
+      }
+    }
+
+    // Join Game as user
+    document.getElementById('join-btn').addEventListener('click', () => {
+      const code = document.getElementById('room-code').value.trim();
+      const user = document.getElementById('username').value.trim();
+      
+      if (!code || !user) {
+        alert('Please fill in both the Room Code and Username fields.');
+        return;
+      }
+      
+      // Redirect to user portal
+      window.location.href = `/user?room=${encodeURIComponent(code)}&username=${encodeURIComponent(user)}`;
+    });
+
+    // Create a new room code
+    document.getElementById('create-room-btn').addEventListener('click', () => {
+      // Generate a 4-digit numeric room code
+      const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
+      window.location.href = `/admin?room=${randomCode}`;
+    });
+
+    // Resume select room
+    document.getElementById('select-room-btn').addEventListener('click', () => {
+      const selectedRoom = document.getElementById('active-rooms-select').value;
+      if (selectedRoom) {
+        window.location.href = `/admin?room=${selectedRoom}`;
+      }
+    });
+
+    window.onload = loadActiveRooms;
+  </script>
+</body>
+</html>

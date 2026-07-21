@@ -1,0 +1,22 @@
+# Dependency directories
+node_modules/
+
+# Local databases
+*.db
+*.db-journal
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment and sensitive keys
+.env
+*.json
+!package.json
+!skills-lock.json
+
+# IDEs
+.DS_Store
+.vscode/
+.idea/
