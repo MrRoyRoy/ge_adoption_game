@@ -226,13 +226,139 @@
 
         <!-- Action panel to go to next round -->
         <div style="display: flex; justify-content: center; gap: 1.5rem; margin-top: 3rem;">
-          <button id="reset-round-btn" class="btn btn-purple" style="min-width: 250px;">
+          <button id="go-to-gallery-btn" class="btn btn-cyan" style="min-width: 250px; box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);">
+            Show Detailed Review & Gallery
+          </button>
+          <button id="reset-round-btn" class="btn btn-purple" style="min-width: 200px;">
             Initiate Next Round
           </button>
         </div>
       </section>
 
+      <!-- PHASE 4: DETAILED REVIEW & GALLERY SECTION -->
+      <section id="admin-gallery" style="display: none;">
+        <div class="glass-panel text-center" style="text-align: center; margin-bottom: 2rem;">
+          <h1 class="brand-font" style="font-size: 2.2rem; color: var(--accent-cyan); text-shadow: var(--glow-cyan); margin-bottom: 0.5rem;">
+            ✦ RECONCILIATION & GALLERY ✦
+          </h1>
+          <p style="font-size: 0.95rem; color: var(--text-secondary);">
+            Deep-dive visual analysis, prompt blueprints, and player creation gallery review.
+          </p>
+        </div>
+
+        <div style="display: flex; gap: 1.5rem; margin-bottom: 2rem;">
+          <!-- Left side: Master Image, Target Characteristics and Pro Tips (55% width) -->
+          <div class="glass-panel" style="flex: 1.2; padding: 2rem;">
+            <h2 class="brand-font" style="font-size: 1.2rem; color: var(--accent-purple); margin-bottom: 1.2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">
+              🎯 MASTER IMAGE BLUEPRINT
+            </h2>
+            <div class="image-card" style="height: 320px; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; margin-bottom: 1.5rem; border: 1px solid var(--glass-border);">
+              <img src="" id="gallery-master-img" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+
+            <!-- Target Characteristics (Prompt blueprint) -->
+            <div style="background: rgba(0,0,0,0.3); padding: 1.2rem; border-radius: 8px; border: 1px solid var(--glass-border); margin-bottom: 1.5rem;">
+              <p style="font-size: 0.75rem; font-family: 'Orbitron', sans-serif; color: var(--accent-cyan); text-transform: uppercase; margin-bottom: 0.4rem; letter-spacing: 1px;">Target Characteristics (Blueprint Prompt)</p>
+              <p id="gallery-master-desc" style="font-size: 0.85rem; font-style: italic; line-height: 1.4; color: #fff; margin: 0;"></p>
+            </div>
+
+            <!-- Short & Clear Pro Tips -->
+            <div style="background: rgba(0, 240, 255, 0.03); border: 1px solid rgba(0, 240, 255, 0.15); border-radius: 8px; padding: 1.2rem;">
+              <h3 class="brand-font" style="font-size: 0.85rem; color: var(--accent-cyan); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem;">
+                💡 IMAGE GENERATION PRO-TIPS
+              </h3>
+              <ul class="suggestion-bullets" style="padding-left: 0; margin: 0; list-style: none;">
+                <li style="margin-bottom: 0.8rem; font-size: 0.8rem; line-height: 1.4; display: flex; gap: 0.5rem;">
+                  <span style="color: var(--accent-cyan);">✦</span>
+                  <div><strong>Specify Camera & Perspective:</strong> Declare lenses (<em>"85mm focal lens"</em>) or camera orientations (<em>"isometric perspective"</em>, <em>"high-angle layout"</em>) instead of letting the AI guess.</div>
+                </li>
+                <li style="margin-bottom: 0.8rem; font-size: 0.8rem; line-height: 1.4; display: flex; gap: 0.5rem;">
+                  <span style="color: var(--accent-cyan);">✦</span>
+                  <div><strong>Describe Precise Lighting Settings:</strong> Anchor atmosphere with explicit lighting setups (<em>"volumetric sunset rays"</em>, <em>"high-contrast chiaroscuro"</em>, <em>"cinematic bokeh glows"</em>).</div>
+                </li>
+                <li style="margin-bottom: 0.8rem; font-size: 0.8rem; line-height: 1.4; display: flex; gap: 0.5rem;">
+                  <span style="color: var(--accent-cyan);">✦</span>
+                  <div><strong>Leverage Explicit Styles & Mediums:</strong> State visual styles directly (<em>"hyper-detailed 3D octane render"</em>, <em>"expressionist oil paint canvas"</em>, <em>"vintage Polaroid snapshot"</em>).</div>
+                </li>
+                <li style="font-size: 0.8rem; line-height: 1.4; display: flex; gap: 0.5rem;">
+                  <span style="color: var(--accent-cyan);">✦</span>
+                  <div><strong>Avoid Generic Adjectives:</strong> Ditch words like <em>"beautiful"</em>, <em>"photorealistic"</em>, or <em>"perfect"</em>. Specify texture, materials, and concrete object details to drive realism.</div>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Right side: Grid gallery of all submitted players' creations (45% width) -->
+          <div class="glass-panel" style="flex: 1; padding: 2rem; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+              <h2 class="brand-font" style="font-size: 1.2rem; color: var(--accent-cyan); margin-bottom: 1.2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">
+                🎨 ARENA GALLERIES
+              </h2>
+              <p style="font-size: 0.8rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                Click any competitor card below to expand their synthesized image and full prompt blueprints.
+              </p>
+              
+              <!-- Responsive Grid container -->
+              <div id="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 1rem; max-height: 520px; overflow-y: auto; padding-right: 0.5rem;">
+                <!-- Filled dynamically -->
+              </div>
+            </div>
+
+            <!-- Initiate Next Round trigger -->
+            <button id="gallery-reset-btn" class="btn btn-purple" style="width: 100%; margin-top: 1.5rem; padding: 0.9rem;">
+              Initiate Next Round
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Lightbox Expand Modal (Shared for Gallery click zoom) -->
+      <div id="gallery-lightbox" class="modal-backdrop" style="display: none; z-index: 10000; align-items: center; justify-content: center;">
+        <div class="glass-panel modal-content" style="max-width: 700px; width: 90%; padding: 2rem; border-color: var(--accent-cyan); position: relative;">
+          <button id="lightbox-close-btn" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+          
+          <div style="display: flex; flex-direction: column; gap: 1.5rem; align-items: center;">
+            <div style="font-family: 'Orbitron', sans-serif; font-size: 1.1rem; color: var(--accent-cyan); text-transform: uppercase; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 0.5rem; width: 100%; text-align: center;">
+              CREATOR: <span id="lightbox-creator" style="color: #fff; font-weight: bold;">---</span> • SCORE: <span id="lightbox-score" style="color: var(--accent-purple);">0</span>
+            </div>
+            
+            <div class="image-card" style="width: 100%; aspect-ratio: 16/9; max-height: 350px; display: flex; align-items: center; justify-content: center; background: #000; border: 1px solid var(--glass-border);">
+              <img src="" id="lightbox-img" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+            
+            <div style="background: rgba(0,0,0,0.4); padding: 1.2rem; border-radius: 8px; border: 1px solid var(--glass-border); width: 100%; text-align: left; box-sizing: border-box;">
+              <p style="font-size: 0.7rem; font-family: 'Orbitron', sans-serif; color: var(--accent-cyan); text-transform: uppercase; margin-bottom: 0.4rem; letter-spacing: 1px;">Submitted Prompt:</p>
+              <p id="lightbox-prompt" style="font-size: 0.85rem; line-height: 1.5; color: var(--text-secondary); margin: 0; word-break: break-word;"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </main>
+  </div>
+
+  <!-- Premium Sci-Fi Custom Confirmation Modal (Admin Purple Accent) -->
+  <div id="custom-confirm-modal" class="modal-backdrop" style="display: none; z-index: 9999;">
+    <div class="glass-panel modal-content" style="max-width: 450px; width: 90%; text-align: center; padding: 2.5rem; border-color: var(--accent-purple); box-shadow: 0 0 20px rgba(188, 0, 221, 0.15);">
+      <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(188, 0, 221, 0.1); border: 1px solid var(--accent-purple); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+        <span style="color: var(--accent-purple); font-size: 1.5rem; font-family: 'Orbitron', sans-serif;">⚠️</span>
+      </div>
+      <h3 class="brand-font" id="confirm-title" style="font-size: 1.2rem; color: #fff; margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">
+        CONFIRM TERMINATION
+      </h3>
+      <p id="confirm-message" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.5;">
+        Are you sure you want to terminate this room? All records will be deleted immediately.
+      </p>
+      
+      <div style="display: flex; gap: 1rem;">
+        <button id="confirm-cancel-btn" class="btn btn-outline" style="flex: 1; padding: 0.8rem;">
+          CANCEL
+        </button>
+        <button id="confirm-ok-btn" class="btn btn-purple" style="flex: 1.2; padding: 0.8rem; box-shadow: 0 0 15px rgba(188,0,221,0.3);">
+          CONFIRM TERMINATION
+        </button>
+      </div>
+    </div>
   </div>
 
   <script src="js/admin.js"></script>

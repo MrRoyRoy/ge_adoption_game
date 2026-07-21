@@ -170,7 +170,7 @@
             <div>
               <p style="font-size: 0.75rem; font-family: 'Orbitron', sans-serif; text-transform: uppercase; margin-bottom: 0.5rem; text-align: center; color: var(--text-secondary);">Master Image</p>
               <div class="image-card" style="aspect-ratio: 1/1; border-radius: 8px;">
-                <img src="" id="poster-master-img">
+                <img src="" id="poster-master-img" style="width: 100%; height: 100%; object-fit: cover;">
               </div>
             </div>
             <div>
@@ -183,7 +183,7 @@
           </div>
 
           <!-- Overall Score Core and commentary -->
-          <div style="background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+          <div class="commentary-box" style="background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
             <div style="display: flex; align-items: center; gap: 1.5rem;">
               <div class="score-circle" style="width: 100px; height: 100px; flex-shrink: 0; box-shadow: var(--glow-cyan); border-color: var(--accent-cyan);">
                 <span class="score-circle-value" id="poster-score-value" style="font-size: 2.2rem;">99</span>
@@ -247,7 +247,108 @@
         </div>
       </section>
 
+      <!-- PHASE 6: REVIEW & GALLERY STATE -->
+      <section id="state-gallery" style="display: none;">
+        <div class="glass-panel text-center" style="text-align: center; margin-bottom: 2rem; padding: 2rem;">
+          <h1 class="brand-font" style="font-size: 2rem; color: var(--accent-cyan); text-shadow: var(--glow-cyan); margin-bottom: 0.5rem;">
+            ✦ EX_POST GALLERY ANALYSIS ✦
+          </h1>
+          <p style="font-size: 0.9rem; color: var(--text-secondary);">
+            Analyze the master prompt structure, read pro prompting insights, and review creations from colleagues across the arena.
+          </p>
+        </div>
+
+        <div class="grid-2" style="margin-bottom: 2rem;">
+          <!-- Left: Master Image Reveal, Characteristics, and Pro Tips -->
+          <div class="glass-panel" style="padding: 2rem;">
+            <h2 class="brand-font" style="font-size: 1.1rem; color: var(--accent-purple); margin-bottom: 1.2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">
+              🎯 TARGET IMAGE SPECIFICATIONS
+            </h2>
+            <div class="image-card" style="height: 250px; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; margin-bottom: 1.2rem; border: 1px solid var(--glass-border);">
+              <img src="" id="user-gallery-master-img" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+
+            <!-- Blueprint -->
+            <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; border: 1px solid var(--glass-border); margin-bottom: 1.2rem;">
+              <p style="font-size: 0.7rem; font-family: 'Orbitron', sans-serif; color: var(--accent-cyan); text-transform: uppercase; margin-bottom: 0.3rem;">Target Characteristics (Master Prompt):</p>
+              <p id="user-gallery-master-desc" style="font-size: 0.8rem; font-style: italic; line-height: 1.4; color: #fff; margin: 0;"></p>
+            </div>
+
+            <!-- Pro-tips -->
+            <div style="background: rgba(0, 240, 255, 0.02); border: 1px solid rgba(0, 240, 255, 0.1); border-radius: 8px; padding: 1rem;">
+              <h3 class="brand-font" style="font-size: 0.8rem; color: var(--accent-cyan); margin-bottom: 0.6rem;">💡 IMAGE GENERATION TIPS</h3>
+              <ul class="suggestion-bullets" style="padding-left: 0; margin: 0; list-style: none;">
+                <li style="margin-bottom: 0.6rem; font-size: 0.75rem; line-height: 1.4;">✦ <strong>Camera & Lenses:</strong> Define focal lengths (<em>"35mm cinematic close-up"</em>) and perspective controls.</li>
+                <li style="margin-bottom: 0.6rem; font-size: 0.75rem; line-height: 1.4;">✦ <strong>Lighting Settings:</strong> Request atmospheric illumination explicitly (<em>"volumetric golden rays"</em>).</li>
+                <li style="margin-bottom: 0.6rem; font-size: 0.75rem; line-height: 1.4;">✦ <strong>Visual Mediums:</strong> Choose explicit platforms (<em>"Unreal Engine 5 render"</em>, <em>"watercolors"</em>).</li>
+                <li style="font-size: 0.75rem; line-height: 1.4;">✦ <strong>Textual Specifics:</strong> Avoid buzzwords like <em>"beautiful"</em>; list precise structures instead.</li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Right: Grid of results -->
+          <div class="glass-panel" style="padding: 2rem;">
+            <h2 class="brand-font" style="font-size: 1.1rem; color: var(--accent-cyan); margin-bottom: 1.2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">
+              🎨 SUBMISSION COMPARISONS
+            </h2>
+            <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1.2rem;">
+              Browse creations from other specialists. Click any card below to zoom and inspect prompt texts!
+            </p>
+            
+            <div id="user-gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.8rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem;">
+              <!-- Filled dynamically -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Lightbox Expand Modal (Shared for Gallery click zoom) -->
+      <div id="gallery-lightbox" class="modal-backdrop" style="display: none; z-index: 10000; align-items: center; justify-content: center;">
+        <div class="glass-panel modal-content" style="max-width: 650px; width: 90%; padding: 2rem; border-color: var(--accent-cyan); position: relative;">
+          <button id="lightbox-close-btn" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+          
+          <div style="display: flex; flex-direction: column; gap: 1.2rem; align-items: center;">
+            <div style="font-family: 'Orbitron', sans-serif; font-size: 1rem; color: var(--accent-cyan); text-transform: uppercase; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 0.4rem; width: 100%; text-align: center;">
+              CREATOR: <span id="lightbox-creator" style="color: #fff; font-weight: bold;">---</span> • SCORE: <span id="lightbox-score" style="color: var(--accent-purple);">0</span>
+            </div>
+            
+            <div class="image-card" style="width: 100%; aspect-ratio: 16/9; max-height: 300px; display: flex; align-items: center; justify-content: center; background: #000; border: 1px solid var(--glass-border);">
+              <img src="" id="lightbox-img" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+            
+            <div style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid var(--glass-border); width: 100%; text-align: left; box-sizing: border-box;">
+              <p style="font-size: 0.65rem; font-family: 'Orbitron', sans-serif; color: var(--accent-cyan); text-transform: uppercase; margin-bottom: 0.3rem;">Submitted Prompt:</p>
+              <p id="lightbox-prompt" style="font-size: 0.8rem; line-height: 1.4; color: var(--text-secondary); margin: 0; word-break: break-word;"></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </main>
+  </div>
+
+  <!-- Premium Sci-Fi Custom Confirmation Modal -->
+  <div id="custom-confirm-modal" class="modal-backdrop" style="display: none; z-index: 9999;">
+    <div class="glass-panel modal-content" style="max-width: 450px; width: 90%; text-align: center; padding: 2.5rem; border-color: var(--accent-cyan); box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);">
+      <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(0, 240, 255, 0.1); border: 1px solid var(--accent-cyan); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
+        <span style="color: var(--accent-cyan); font-size: 1.5rem; font-family: 'Orbitron', sans-serif;">⚠️</span>
+      </div>
+      <h3 class="brand-font" id="confirm-title" style="font-size: 1.2rem; color: #fff; margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">
+        CONFIRM SUBMISSION
+      </h3>
+      <p id="confirm-message" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.5;">
+        Are you sure? Once submitted, your prompt is locked and cannot be edited.
+      </p>
+      
+      <div style="display: flex; gap: 1rem;">
+        <button id="confirm-cancel-btn" class="btn btn-outline" style="flex: 1; padding: 0.8rem;">
+          CANCEL
+        </button>
+        <button id="confirm-ok-btn" class="btn btn-cyan" style="flex: 1.2; padding: 0.8rem; box-shadow: 0 0 15px rgba(0,240,255,0.3);">
+          CONFIRM LOCK
+        </button>
+      </div>
+    </div>
   </div>
 
   <script src="js/user.js"></script>

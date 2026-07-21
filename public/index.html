@@ -39,7 +39,7 @@
           
           <div class="input-group" style="margin-bottom: 2rem;">
             <label for="username">Username</label>
-            <input type="text" id="username" class="input-control" placeholder="e.g. PromptMaster" maxlength="20">
+            <input type="text" id="username" class="input-control" placeholder="e.g. PromptMaster" maxlength="20" style="text-align: center; font-family: 'Orbitron', sans-serif; letter-spacing: 2px;">
           </div>
         </div>
         
@@ -86,41 +86,7 @@
     </div>
   </div>
 
-  <!-- Premium Sci-Fi Admin Authentication Modal Overlay -->
-  <div id="admin-auth-modal" class="modal-backdrop" style="display: none;">
-    <div class="glass-panel modal-content" style="max-width: 420px; width: 90%; text-align: center; padding: 2.5rem;">
-      <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(188, 0, 221, 0.1); border: 1px solid var(--accent-purple); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
-        <span style="color: var(--accent-purple); font-size: 1.8rem; font-weight: bold; font-family: 'Orbitron', sans-serif;">🔒</span>
-      </div>
-      <h3 class="brand-font" style="font-size: 1.25rem; color: #fff; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 2px;">
-        ADMIN AUTHENTICATION
-      </h3>
-      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.5;">
-        Secure operation channel. Enter authorization passcode to proceed.
-      </p>
-      
-      <div class="input-group" style="margin-bottom: 2rem; text-align: left;">
-        <label for="admin-passcode" class="brand-font" style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Passcode</label>
-        <input type="password" id="admin-passcode" class="input-control" placeholder="••••••••" style="text-align: center; font-family: 'Orbitron', sans-serif; letter-spacing: 5px; font-weight: bold; border-color: rgba(188, 0, 221, 0.25);">
-        <p id="auth-error-msg" style="color: #ff3366; font-size: 0.75rem; font-family: 'Orbitron', sans-serif; text-transform: uppercase; letter-spacing: 1px; margin-top: 0.6rem; display: none; text-align: center;">
-          ⚡ Access Denied: Invalid Passcode
-        </p>
-      </div>
-      
-      <div style="display: flex; gap: 1rem;">
-        <button id="modal-cancel-btn" class="btn btn-outline" style="flex: 1; padding: 0.7rem;">
-          Cancel
-        </button>
-        <button id="modal-submit-btn" class="btn btn-purple" style="flex: 1; padding: 0.7rem; box-shadow: 0 0 15px rgba(188,0,221,0.4);">
-          Verify
-        </button>
-      </div>
-    </div>
-  </div>
-
   <script>
-    let pendingAdminAction = null; // Stores target action: { type: 'create'|'select', data?: any }
-
     // Fetch active rooms on page load
     async function loadActiveRooms() {
       try {
@@ -165,71 +131,17 @@
       window.location.href = `/user?room=${encodeURIComponent(code)}&username=${encodeURIComponent(user)}`;
     });
 
-    // Admin Action Interceptors
-    const authModal = document.getElementById('admin-auth-modal');
-    const passcodeField = document.getElementById('admin-passcode');
-    const errorMsg = document.getElementById('auth-error-msg');
-
-    function openAuthModal(action) {
-      pendingAdminAction = action;
-      authModal.style.display = 'flex';
-      passcodeField.value = '';
-      errorMsg.style.display = 'none';
-      passcodeField.focus();
-    }
-
-    function closeAuthModal() {
-      authModal.style.display = 'none';
-      pendingAdminAction = null;
-    }
-
-    // Trigger Auth Modal on Create New Room
+    // Create New Room (Direct redirect - guarded by /admin passcode gate)
     document.getElementById('create-room-btn').addEventListener('click', () => {
-      openAuthModal({ type: 'create' });
+      const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
+      window.location.href = `/admin?room=${randomCode}`;
     });
 
-    // Trigger Auth Modal on Resume Selected Room
+    // Resume Selected Room (Direct redirect - guarded by /admin passcode gate)
     document.getElementById('select-room-btn').addEventListener('click', () => {
       const selectedRoom = document.getElementById('active-rooms-select').value;
       if (selectedRoom) {
-        openAuthModal({ type: 'select', data: selectedRoom });
-      }
-    });
-
-    // Handle Modal Verification
-    function executeVerification() {
-      const inputPasscode = passcodeField.value.trim();
-      const defaultPasscode = "MrRoyRoy";
-
-      if (inputPasscode === defaultPasscode) {
-        // Authenticated! Execute action
-        const action = pendingAdminAction;
-        closeAuthModal();
-        
-        if (action.type === 'create') {
-          // Generate a 4-digit numeric room code
-          const randomCode = Math.floor(1000 + Math.random() * 9000).toString();
-          window.location.href = `/admin?room=${randomCode}`;
-        } else if (action.type === 'select') {
-          window.location.href = `/admin?room=${action.data}`;
-        }
-      } else {
-        // Show glowing error message
-        errorMsg.style.display = 'block';
-        passcodeField.style.borderColor = '#ff3366';
-        passcodeField.classList.add('shake-anim');
-        setTimeout(() => passcodeField.classList.remove('shake-anim'), 400);
-      }
-    }
-
-    document.getElementById('modal-submit-btn').addEventListener('click', executeVerification);
-
-    document.getElementById('modal-cancel-btn').addEventListener('click', closeAuthModal);
-
-    // Support submitting by pressing Enter key
-    passcodeField.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        executeVerification();
+        window.location.href = `/admin?room=${selectedRoom}`;
       }
     });
 

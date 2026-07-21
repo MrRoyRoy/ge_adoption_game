@@ -43,7 +43,10 @@
 - [x] Engineered a highly dramatic laser-sweep scanning overlay and fast random lottery digit-shuffling score reveal on individual certificates.
 - [x] Programmed automatic regex highlighters in JS to bold prompt keywords (e.g. `35mm`, `isometric`, `cinematic`) in Gemini grading suggestions.
 - [x] Calibrated media print CSS properties to enforce dark-themed certificate printing with `-webkit-print-color-adjust: exact` for crisp legibility.
+- [x] Engineered comprehensive Phase 4 **Detailed Review & Gallery View** (`GALLERY` state) for both Presenter screens and Player cockpits.
+- [x] Programmed interactive fullscreen lightboxes with backdrop dismissing, click zoom effects, and full prompt breakdowns on gallery items.
+- [x] Resolved high-fidelity print poster rendering bugs by establishing explicit `@media print` CSS overrides preserving background gradients and border structures of score dials, master cards, and commentary logs.
 
 ### Active/Next Tasks
-- [ ] Monitor active tournament sessions and compile feedback.
-- [ ] Implement additional comparative round stats as requested.
+- [ ] Monitor live Cloud Run server telemetry and user engagement.
+- [ ] Expand multimodal grading rubrics if further grading facets are desired.

@@ -29,6 +29,42 @@ function showCustomNotification(message, type = 'info') {
   }, 3500);
 }
 
+// Custom Confirmation Dialog Overlay Utility (Admin Portal)
+function showCustomConfirm(title, message, onConfirm) {
+  const modal = document.getElementById('custom-confirm-modal');
+  const titleEl = document.getElementById('confirm-title');
+  const msgEl = document.getElementById('confirm-message');
+  const okBtn = document.getElementById('confirm-ok-btn');
+  const cancelBtn = document.getElementById('confirm-cancel-btn');
+  
+  if (!modal) {
+    if (confirm(message)) onConfirm();
+    return;
+  }
+  
+  titleEl.textContent = title.toUpperCase();
+  msgEl.textContent = message;
+  modal.style.display = 'flex';
+  
+  const cleanUp = () => {
+    modal.style.display = 'none';
+    okBtn.removeEventListener('click', handleOk);
+    cancelBtn.removeEventListener('click', handleCancel);
+  };
+  
+  const handleOk = () => {
+    cleanUp();
+    onConfirm();
+  };
+  
+  const handleCancel = () => {
+    cleanUp();
+  };
+  
+  okBtn.addEventListener('click', handleOk);
+  cancelBtn.addEventListener('click', handleCancel);
+}
+
 const socket = io();
 
 // Parse room ID from query parameter
@@ -196,6 +232,12 @@ socket.on('room-state', ({ status, activeMasterIndex, players }) => {
     renderPlayingRoster(players);
     showSection('playing');
   }
+
+  // Process Gallery View
+  else if (status === 'GALLERY') {
+    const activeMaster = masterImagesList.find(img => img.index === activeMasterIndex) || masterImagesList[selectedMasterIndex];
+    populateAndShowGallery(players, activeMaster);
+  }
 });
 
 function renderLobbyRoster(players) {
@@ -232,6 +274,11 @@ function showSection(section) {
   adminPlayingSec.style.display = section === 'playing' ? 'block' : 'none';
   adminRevealSec.style.display = section === 'reveal' ? 'block' : 'none';
   
+  const gallerySec = document.getElementById('admin-gallery');
+  if (gallerySec) {
+    gallerySec.style.display = section === 'gallery' ? 'block' : 'none';
+  }
+  
   if (section !== 'reveal') {
     stopConfetti();
   }
@@ -253,11 +300,115 @@ resetRoundBtn.addEventListener('click', () => {
   socket.emit('start-game', { roomId, masterIndex: masterImagesList[Math.floor(Math.random() * masterImagesList.length)].index });
 });
 
+// 3.5 Admin navigates to Detailed Review & Gallery
+const goToGalleryBtn = document.getElementById('go-to-gallery-btn');
+if (goToGalleryBtn) {
+  goToGalleryBtn.addEventListener('click', () => {
+    socket.emit('show-gallery', roomId);
+  });
+}
+
+// 3.6 Admin resets round from Gallery view
+const galleryResetBtn = document.getElementById('gallery-reset-btn');
+if (galleryResetBtn) {
+  galleryResetBtn.addEventListener('click', () => {
+    socket.emit('start-game', { roomId, masterIndex: masterImagesList[Math.floor(Math.random() * masterImagesList.length)].index });
+  });
+}
+
+// 3.7 Handle Gallery Reveal event
+socket.on('room-gallery', ({ players }) => {
+  const activeMaster = masterImagesList.find(img => img.index === activeMasterIndex) || masterImagesList[selectedMasterIndex];
+  populateAndShowGallery(players, activeMaster);
+});
+
+// Render the interactive deep-dive gallery
+function populateAndShowGallery(players, activeMaster) {
+  showSection('gallery');
+  
+  const masterImg = document.getElementById('gallery-master-img');
+  const masterDesc = document.getElementById('gallery-master-desc');
+  
+  if (activeMaster) {
+    masterImg.src = `assets/master-images/${activeMaster.filename}`;
+    masterDesc.textContent = activeMaster.prompt;
+  }
+  
+  const grid = document.getElementById('gallery-grid');
+  if (grid) {
+    grid.innerHTML = '';
+    
+    players.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'glass-panel';
+      card.style.cssText = 'padding: 0.6rem; border-radius: 8px; cursor: pointer; border-color: rgba(255,255,255,0.08); transition: all 0.2s ease-in-out;';
+      
+      const imgUrl = p.user_image_base64 ? `data:image/jpeg;base64,${p.user_image_base64}` : 'assets/placeholder.jpg';
+      
+      card.innerHTML = `
+        <div style="aspect-ratio: 1/1; border-radius: 6px; overflow: hidden; border: 1px solid var(--glass-border); background: #000; margin-bottom: 0.5rem;">
+          <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 0.75rem; font-weight: bold; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHTML(p.username)}</div>
+          <div style="font-size: 0.7rem; color: var(--accent-cyan); font-family: 'Orbitron', sans-serif; font-weight: bold; margin-top: 0.1rem;">${p.score} PTS</div>
+        </div>
+      `;
+      
+      card.addEventListener('mouseenter', () => {
+        card.style.borderColor = 'var(--accent-cyan)';
+        card.style.transform = 'scale(1.03)';
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.borderColor = 'rgba(255,255,255,0.08)';
+        card.style.transform = 'scale(1)';
+      });
+      
+      card.addEventListener('click', () => {
+        openLightbox(p.username, p.score, imgUrl, p.submitted_prompt);
+      });
+      
+      grid.appendChild(card);
+    });
+  }
+}
+
+// Lightbox Mechanics
+const lightbox = document.getElementById('gallery-lightbox');
+const lightboxCloseBtn = document.getElementById('lightbox-close-btn');
+const lightboxCreator = document.getElementById('lightbox-creator');
+const lightboxScore = document.getElementById('lightbox-score');
+const lightboxImg = document.getElementById('lightbox-img');
+const lightboxPrompt = document.getElementById('lightbox-prompt');
+
+function openLightbox(creator, score, imgUrl, prompt) {
+  if (!lightbox) return;
+  lightboxCreator.textContent = creator.toUpperCase();
+  lightboxScore.textContent = `${score} PTS`;
+  lightboxImg.src = imgUrl;
+  lightboxPrompt.textContent = prompt || 'No prompt locked in time.';
+  lightbox.style.display = 'flex';
+}
+
+if (lightboxCloseBtn) {
+  lightboxCloseBtn.addEventListener('click', () => {
+    lightbox.style.display = 'none';
+  });
+}
+
+if (lightbox) {
+  lightbox.addEventListener('click', (e) => {
+    if (e.target === lightbox) {
+      lightbox.style.display = 'none';
+    }
+  });
+}
+
 // 4. Terminate Room
 terminateBtn.addEventListener('click', () => {
-  if (confirm('Are you sure you want to terminate this room? All records will be deleted immediately.')) {
+  showCustomConfirm('Terminate Room', 'Are you sure you want to terminate this room? All records will be deleted immediately.', () => {
     socket.emit('terminate-room', roomId);
-  }
+  });
 });
 
 // Handle termination signal

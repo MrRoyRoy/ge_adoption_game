@@ -246,14 +246,17 @@ io.on('connection', (socket) => {
     console.log(`Admin clicked End Game in room [${roomId}]`);
 
     db.run('UPDATE rooms SET status = ? WHERE id = ?', ['REVEAL', roomId], () => {
-      // Fetch scoreboard
+      // Fetch all players to evaluate, regardless of whether they submitted
       db.all(
-        'SELECT username, score, submitted_prompt, user_image_base64, evaluation_json FROM players WHERE room_id = ? AND has_submitted = 1 ORDER BY score DESC',
+        'SELECT username, score, submitted_prompt, user_image_base64, evaluation_json, has_submitted FROM players WHERE room_id = ? ORDER BY score DESC',
         [roomId],
         (err, players) => {
           if (err) return;
 
-          const leaderboard = players.slice(0, 3).map(p => ({
+          // For the leaderboard, only include players who actually submitted
+          const submittedPlayers = players.filter(p => p.has_submitted === 1);
+          
+          const leaderboard = submittedPlayers.slice(0, 3).map(p => ({
             username: p.username,
             score: p.score,
             prompt: p.submitted_prompt,
@@ -266,16 +269,50 @@ io.on('connection', (socket) => {
 
           // Notify individual players of their personal score & poster
           players.forEach((player) => {
-            io.to(roomId).emit(`player-reveal-${player.username}`, {
-              score: player.score,
-              prompt: player.submitted_prompt,
-              userImage: player.user_image_base64,
-              evaluation: JSON.parse(player.evaluation_json)
-            });
+            if (player.has_submitted === 1) {
+              io.to(roomId).emit(`player-reveal-${player.username}`, {
+                score: player.score,
+                prompt: player.submitted_prompt,
+                userImage: player.user_image_base64,
+                evaluation: JSON.parse(player.evaluation_json)
+              });
+            } else {
+              // Generate custom friendly failure scorecard
+              const failedEvaluation = {
+                commentary: "Sorry! You did not lock your final prompt in time for this match. The AI Director was unable to synthesize or evaluate your submission. Keep a close eye on the facilitator's dashboard and submit earlier next round!",
+                rubric: { styleAndAesthetic: 0, compositionAndLayout: 0, colorAndLighting: 0, subjectAndAccuracy: 0 },
+                suggestions: [
+                  "Watch the presenter screen closely to manage your remaining time.",
+                  "Lock in your prompt early to secure your evaluation",
+                  "Use concise, descriptive elements to speed up formulation."
+                ]
+              };
+              io.to(roomId).emit(`player-reveal-${player.username}`, {
+                score: 0,
+                prompt: "No prompt submitted in time.",
+                userImage: "", // will show fallback placeholder
+                evaluation: failedEvaluation
+              });
+            }
           });
 
           // General broadcast of reveal status
           io.to(roomId).emit('reveal-triggered');
+        }
+      );
+    });
+  });
+
+  // 5.5 Admin: Progress to Gallery Review
+  socket.on('show-gallery', (roomId) => {
+    console.log(`Admin progressed to Gallery in room [${roomId}]`);
+    db.run("UPDATE rooms SET status = 'GALLERY' WHERE id = ?", [roomId], () => {
+      db.all(
+        "SELECT username, score, submitted_prompt, user_image_base64, has_submitted FROM players WHERE room_id = ? ORDER BY score DESC",
+        [roomId],
+        (err, players) => {
+          if (err) return;
+          io.to(roomId).emit('room-gallery', { players });
         }
       );
     });

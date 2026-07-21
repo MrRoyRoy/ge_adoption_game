@@ -29,6 +29,43 @@ function showCustomNotification(message, type = 'info') {
   }, 3500);
 }
 
+// Custom Confirmation Dialog Overlay Utility
+function showCustomConfirm(title, message, onConfirm) {
+  const modal = document.getElementById('custom-confirm-modal');
+  const titleEl = document.getElementById('confirm-title');
+  const msgEl = document.getElementById('confirm-message');
+  const okBtn = document.getElementById('confirm-ok-btn');
+  const cancelBtn = document.getElementById('confirm-cancel-btn');
+  
+  if (!modal) {
+    // Fallback if elements not ready
+    if (confirm(message)) onConfirm();
+    return;
+  }
+  
+  titleEl.textContent = title.toUpperCase();
+  msgEl.textContent = message;
+  modal.style.display = 'flex';
+  
+  const cleanUp = () => {
+    modal.style.display = 'none';
+    okBtn.removeEventListener('click', handleOk);
+    cancelBtn.removeEventListener('click', handleCancel);
+  };
+  
+  const handleOk = () => {
+    cleanUp();
+    onConfirm();
+  };
+  
+  const handleCancel = () => {
+    cleanUp();
+  };
+  
+  okBtn.addEventListener('click', handleOk);
+  cancelBtn.addEventListener('click', handleCancel);
+}
+
 const socket = io();
 
 // Parse room ID and username from parameters
@@ -37,8 +74,21 @@ const roomId = urlParams.get('room');
 const username = urlParams.get('username');
 
 let activeMasterIndex = 0;
+let masterImagesList = [];
 let userFinalImage = '';
 let userFinalEvaluation = null;
+
+async function loadMasterImagesCatalog() {
+  try {
+    const res = await fetch('/api/master-images');
+    if (res.ok) {
+      masterImagesList = await res.json();
+    }
+  } catch (err) {
+    console.error('Error loading master images list:', err);
+  }
+}
+loadMasterImagesCatalog();
 
 // DOM Elements
 const roomBadge = document.getElementById('room-badge');
@@ -49,6 +99,7 @@ const statePlaying = document.getElementById('state-playing');
 const stateSubmitted = document.getElementById('state-submitted');
 const stateScanning = document.getElementById('state-scanning');
 const statePoster = document.getElementById('state-poster');
+const stateGallery = document.getElementById('state-gallery');
 
 const userPrompt = document.getElementById('user-prompt');
 const submitPromptBtn = document.getElementById('submit-prompt-btn');
@@ -105,6 +156,8 @@ socket.on('join-success', ({ roomStatus, activeMasterIndex: currentMaster, playe
     setTimeout(() => {
       window.location.href = '/';
     }, 3000);
+  } else if (roomStatus === 'GALLERY') {
+    showSection('gallery');
   }
 });
 
@@ -136,7 +189,7 @@ submitPromptBtn.addEventListener('click', () => {
     return;
   }
 
-  if (confirm('Are you sure? Once submitted, your prompt is locked and cannot be edited.')) {
+  showCustomConfirm('Confirm Lock', 'Are you sure? Once submitted, your prompt is locked and cannot be edited.', () => {
     lockedPromptDisplay.textContent = prompt;
     userPrompt.disabled = true;
     submitPromptBtn.disabled = true;
@@ -144,7 +197,7 @@ submitPromptBtn.addEventListener('click', () => {
     // Send payload to background evaluator
     socket.emit('submit-prompt', { roomId, username, prompt });
     showSection('submitted');
-  }
+  });
 });
 
 // 5. Server Emits Evaluation Complete
@@ -273,6 +326,97 @@ function showSection(section) {
   stateSubmitted.style.display = section === 'submitted' ? 'block' : 'none';
   stateScanning.style.display = section === 'scanning' ? 'block' : 'none';
   statePoster.style.display = section === 'poster' ? 'block' : 'none';
+  if (stateGallery) {
+    stateGallery.style.display = section === 'gallery' ? 'block' : 'none';
+  }
+}
+
+// 6. GALLERY & REVIEW SYSTEM
+socket.on('room-gallery', ({ players }) => {
+  loadUserGalleryView(players);
+});
+
+function loadUserGalleryView(players) {
+  showSection('gallery');
+  
+  const activeMaster = masterImagesList.find(img => img.index === activeMasterIndex);
+  
+  const masterImg = document.getElementById('user-gallery-master-img');
+  const masterDesc = document.getElementById('user-gallery-master-desc');
+  
+  if (activeMaster) {
+    if (masterImg) masterImg.src = `assets/master-images/${activeMaster.filename}`;
+    if (masterDesc) masterDesc.textContent = activeMaster.prompt;
+  }
+  
+  const grid = document.getElementById('user-gallery-grid');
+  if (grid) {
+    grid.innerHTML = '';
+    
+    players.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'glass-panel';
+      card.style.cssText = 'padding: 0.6rem; border-radius: 8px; cursor: pointer; border-color: rgba(255,255,255,0.08); transition: all 0.2s ease-in-out;';
+      
+      const imgUrl = p.user_image_base64 ? `data:image/jpeg;base64,${p.user_image_base64}` : 'assets/placeholder.jpg';
+      
+      card.innerHTML = `
+        <div style="aspect-ratio: 1/1; border-radius: 6px; overflow: hidden; border: 1px solid var(--glass-border); background: #000; margin-bottom: 0.5rem;">
+          <img src="${imgUrl}" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+        <div style="text-align: center;">
+          <div style="font-size: 0.75rem; font-weight: bold; color: #fff; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHTML(p.username)}</div>
+          <div style="font-size: 0.7rem; color: var(--accent-cyan); font-family: 'Orbitron', sans-serif; font-weight: bold; margin-top: 0.1rem;">${p.score} PTS</div>
+        </div>
+      `;
+      
+      card.addEventListener('mouseenter', () => {
+        card.style.borderColor = 'var(--accent-cyan)';
+        card.style.transform = 'scale(1.03)';
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.borderColor = 'rgba(255,255,255,0.08)';
+        card.style.transform = 'scale(1)';
+      });
+      
+      card.addEventListener('click', () => {
+        openUserLightbox(p.username, p.score, imgUrl, p.submitted_prompt);
+      });
+      
+      grid.appendChild(card);
+    });
+  }
+}
+
+// User Lightbox Mechanics
+const userLightbox = document.getElementById('gallery-lightbox');
+const userLightboxCloseBtn = document.getElementById('lightbox-close-btn');
+const userLightboxCreator = document.getElementById('lightbox-creator');
+const userLightboxScore = document.getElementById('lightbox-score');
+const userLightboxImg = document.getElementById('lightbox-img');
+const userLightboxPrompt = document.getElementById('lightbox-prompt');
+
+function openUserLightbox(creator, score, imgUrl, prompt) {
+  if (!userLightbox) return;
+  userLightboxCreator.textContent = creator.toUpperCase();
+  userLightboxScore.textContent = `${score} PTS`;
+  userLightboxImg.src = imgUrl;
+  userLightboxPrompt.textContent = prompt || 'No prompt locked in time.';
+  userLightbox.style.display = 'flex';
+}
+
+if (userLightboxCloseBtn) {
+  userLightboxCloseBtn.addEventListener('click', () => {
+    userLightbox.style.display = 'none';
+  });
+}
+
+if (userLightbox) {
+  userLightbox.addEventListener('click', (e) => {
+    if (e.target === userLightbox) {
+      userLightbox.style.display = 'none';
+    }
+  });
 }
 
 // 8. Print Poster Button
