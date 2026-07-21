@@ -21,7 +21,7 @@ A premium, interactive, real-time gamified application designed to train and ups
 - **Frontend:** Vanilla HTML5, CSS3 (Glassmorphic dark design system with neon highlights), and JavaScript.
 - **Generative AI Services (Google Cloud Vertex AI):**
   - **`gemini-3.1-flash-lite-image`:** (Global region) Generates prompt results and populates master library targets.
-  - **`gemini-1.5-flash`:** (Global region) Provides visual comparisons, rubrics, and direct coaching commentary.
+  - **`gemini-3.5-flash`:** (Global region) Provides visual comparisons, rubrics, and direct coaching commentary.
 - **Authorization:** Application Default Credentials (ADC) for local use, and default Cloud Run Service Account bindings for production deployments.
 
 ---
@@ -66,7 +66,7 @@ Create a `.env` file in the root:
 PROJECT_ID=ge-edu-demo
 LOCATION=global
 IMAGEN_MODEL=gemini-3.1-flash-lite-image
-GEMINI_MODEL=gemini-1.5-flash
+GEMINI_MODEL=gemini-3.5-flash
 PORT=8080
 ```
 
