@@ -36,7 +36,14 @@
 - [x] Configured multi-stage compiled `Dockerfile` and automated `scripts/deploy.sh`.
 - [x] Synchronized codebase to GitHub repository `git@github.com:MrRoyRoy/ge_adoption_game.git` via SSH.
 - [x] Successfully deployed and hosted the live application on Google Cloud Run.
+- [x] Enforced strict direct-URL administrative gate on `/admin` checking `sessionStorage` for the passcode (`MrRoyRoy`) before socket connection or resource loading.
+- [x] Eliminated native browser `alert()` popups, introducing high-fidelity glassmorphic fly-in system notifications and shaking input error animations.
+- [x] Pruned private test generation features from player workspaces to prevent play-leakage, maximizing focus on preparation elsewhere.
+- [x] Upgraded the player console to a responsive wide desktop layout incorporating a full Game Instructions & Prompting Tips sidebar.
+- [x] Engineered a highly dramatic laser-sweep scanning overlay and fast random lottery digit-shuffling score reveal on individual certificates.
+- [x] Programmed automatic regex highlighters in JS to bold prompt keywords (e.g. `35mm`, `isometric`, `cinematic`) in Gemini grading suggestions.
+- [x] Calibrated media print CSS properties to enforce dark-themed certificate printing with `-webkit-print-color-adjust: exact` for crisp legibility.
 
 ### Active/Next Tasks
-- [ ] Maintain, monitor and gather feedback on live gameplay sessions.
-- [ ] Add further gamified modules/rounds if requested by stakeholders.
+- [ ] Monitor active tournament sessions and compile feedback.
+- [ ] Implement additional comparative round stats as requested.
