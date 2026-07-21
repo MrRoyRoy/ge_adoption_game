@@ -9,12 +9,13 @@
     "generate-library": "node scripts/generate-master-library.js"
   },
   "dependencies": {
+    "@google/genai": "^2.13.0",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "google-auth-library": "^9.11.0",
     "socket.io": "^4.7.5",
     "sqlite3": "^5.1.7",
-    "google-auth-library": "^9.11.0",
-    "uuid": "^10.0.0",
-    "dotenv": "^16.4.5"
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"
