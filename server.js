@@ -318,6 +318,23 @@ io.on('connection', (socket) => {
     });
   });
 
+  // 5.8 Admin: Reset Room back to Lobby (Game Selection)
+  socket.on('reset-to-lobby', (roomId) => {
+    console.log(`Admin resetting room [${roomId}] back to Lobby/Game Selection`);
+    db.run("UPDATE rooms SET status = 'LOBBY' WHERE id = ?", [roomId], () => {
+      // Clear player round states so they are fresh for the next selected game
+      db.run(
+        `UPDATE players SET score = 0, submitted_prompt = NULL, user_image_base64 = NULL, evaluation_json = NULL, has_submitted = 0 
+         WHERE room_id = ?`,
+        [roomId],
+        () => {
+          io.to(roomId).emit('room-reset-lobby');
+          sendRoomStateToAdmin(roomId);
+        }
+      );
+    });
+  });
+
   // 6. Admin: Terminate Room
   socket.on('terminate-room', (roomId) => {
     console.log(`Admin terminating room [${roomId}]`);

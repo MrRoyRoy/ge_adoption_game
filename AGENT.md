@@ -46,6 +46,9 @@
 - [x] Engineered comprehensive Phase 4 **Detailed Review & Gallery View** (`GALLERY` state) for both Presenter screens and Player cockpits.
 - [x] Programmed interactive fullscreen lightboxes with backdrop dismissing, click zoom effects, and full prompt breakdowns on gallery items.
 - [x] Resolved high-fidelity print poster rendering bugs by establishing explicit `@media print` CSS overrides preserving background gradients and border structures of score dials, master cards, and commentary logs.
+- [x] Simplified the printable poster layout to fit perfectly on a single physical/PDF page by removing the Rubric Breakdown and Prompt Enhancements sections, guarding JS variables to prevent any null ReferenceErrors.
+- [x] Removed the "Play Again" redirect button from the player certificate workspace to enforce administrative command control.
+- [x] Engineered the **Back to Game Selection** loop (`reset-to-lobby` socket listener), allowing administrators to clear round history and return to the master image lobby picker securely.
 
 ### Active/Next Tasks
 - [ ] Monitor live Cloud Run server telemetry and user engagement.

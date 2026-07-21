@@ -232,14 +232,16 @@ function populateAndShowPoster(score, prompt, userImage, evaluation) {
   posterUserImg.src = `data:image/jpeg;base64,${userImage}`;
   
   // Fill scores
-  posterCommentary.textContent = evaluation.commentary;
-  rubricStyle.textContent = `${evaluation.rubric.styleAndAesthetic}/25`;
-  rubricComposition.textContent = `${evaluation.rubric.compositionAndLayout}/25`;
-  rubricColor.textContent = `${evaluation.rubric.colorAndLighting}/25`;
-  rubricSubject.textContent = `${evaluation.rubric.subjectAndAccuracy}/25`;
+  if (posterCommentary) posterCommentary.textContent = evaluation.commentary;
+  if (rubricStyle) rubricStyle.textContent = `${evaluation.rubric.styleAndAesthetic}/25`;
+  if (rubricComposition) rubricComposition.textContent = `${evaluation.rubric.compositionAndLayout}/25`;
+  if (rubricColor) rubricColor.textContent = `${evaluation.rubric.colorAndLighting}/25`;
+  if (rubricSubject) rubricSubject.textContent = `${evaluation.rubric.subjectAndAccuracy}/25`;
   
   // Populate suggestions with key terms bolded
-  posterSuggestions.innerHTML = evaluation.suggestions.map(s => `<li>${highlightSuggestions(s)}</li>`).join('');
+  if (posterSuggestions && evaluation.suggestions) {
+    posterSuggestions.innerHTML = evaluation.suggestions.map(s => `<li>${highlightSuggestions(s)}</li>`).join('');
+  }
 
   showSection('poster');
 
@@ -336,6 +338,10 @@ socket.on('room-gallery', ({ players }) => {
   loadUserGalleryView(players);
 });
 
+socket.on('room-reset-lobby', () => {
+  showSection('lobby');
+});
+
 function loadUserGalleryView(players) {
   showSection('gallery');
   
@@ -425,9 +431,11 @@ printPosterBtn.addEventListener('click', () => {
 });
 
 // 9. Play Again Redirects Home
-playAgainBtn.addEventListener('click', () => {
-  window.location.href = '/';
-});
+if (playAgainBtn) {
+  playAgainBtn.addEventListener('click', () => {
+    window.location.href = '/';
+  });
+}
 
 // Secure HTML escaping
 function escapeHTML(str) {

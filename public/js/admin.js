@@ -297,9 +297,9 @@ endGameBtn.addEventListener('click', () => {
   socket.emit('end-game', roomId);
 });
 
-// 3. Admin clicks reset room to go back to lobby
+// 3. Admin clicks reset room to go back to lobby / game selection
 resetRoundBtn.addEventListener('click', () => {
-  socket.emit('start-game', { roomId, masterIndex: masterImagesList[Math.floor(Math.random() * masterImagesList.length)].index });
+  socket.emit('reset-to-lobby', roomId);
 });
 
 // 3.5 Admin navigates to Detailed Review & Gallery
@@ -310,11 +310,11 @@ if (goToGalleryBtn) {
   });
 }
 
-// 3.6 Admin resets round from Gallery view
+// 3.6 Admin resets round from Gallery view to go back to lobby / game selection
 const galleryResetBtn = document.getElementById('gallery-reset-btn');
 if (galleryResetBtn) {
   galleryResetBtn.addEventListener('click', () => {
-    socket.emit('start-game', { roomId, masterIndex: masterImagesList[Math.floor(Math.random() * masterImagesList.length)].index });
+    socket.emit('reset-to-lobby', roomId);
   });
 }
 
