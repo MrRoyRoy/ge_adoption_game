@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 COPY package*.json ./
-RUN npm ci
+RUN npm install
 
 # Production image
 FROM node:20-slim
@@ -20,7 +20,7 @@ WORKDIR /usr/src/app
 
 COPY package*.json ./
 # Only install production dependencies
-RUN npm ci --only=production
+RUN npm install --omit=dev
 
 # Copy necessary project files from builder and source
 COPY --from=builder /usr/src/app/node_modules ./node_modules
