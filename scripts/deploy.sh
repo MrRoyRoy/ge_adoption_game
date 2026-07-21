@@ -32,7 +32,7 @@ gcloud run deploy "${SERVICE_NAME}" \
   --service-account "${SERVICE_ACCOUNT}" \
   --max-instances 1 \
   --allow-unauthenticated \
-  --set-env-vars="PROJECT_ID=${PROJECT_ID},LOCATION=global,IMAGEN_MODEL=gemini-3.1-flash-lite-image,GEMINI_MODEL=gemini-1.5-flash"
+  --set-env-vars="PROJECT_ID=${PROJECT_ID},LOCATION=global,IMAGEN_MODEL=gemini-3.1-flash-lite-image,GEMINI_MODEL=gemini-3.5-flash"
 
 echo "======================================================="
 echo "🎉 DEPLOYMENT COMPLETE!"

@@ -5,7 +5,7 @@ dotenv.config();
 const PROJECT_ID = process.env.PROJECT_ID || 'ge-edu-demo';
 const LOCATION = process.env.LOCATION || 'global';
 const IMAGEN_MODEL = process.env.IMAGEN_MODEL || 'gemini-3.1-flash-lite-image';
-const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-1.5-flash';
+const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.5-flash';
 
 // Resolve appropriate API endpoint. If LOCATION is global, call via us-central1 endpoint
 const API_ENDPOINT = process.env.API_ENDPOINT || (LOCATION === 'global' ? 'us-central1-aiplatform.googleapis.com' : `${LOCATION}-aiplatform.googleapis.com`);
