@@ -15,6 +15,7 @@ function initDatabase() {
           status TEXT DEFAULT 'LOBBY', -- LOBBY, PLAYING, REVEAL, GALLERY, ENDED
           game_mode TEXT DEFAULT 'GAME1', -- GAME1 (Image Prompting), GAME2 (Keep Koopa LLM)
           active_master_index INTEGER DEFAULT 0,
+          created_by_email TEXT DEFAULT 'anonymous@google.com',
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
       `, (err) => { if (err) reject(err); });
@@ -39,6 +40,7 @@ function initDatabase() {
         } else {
           // Perform safe column migrations if existing database table is present
           db.run("ALTER TABLE rooms ADD COLUMN game_mode TEXT DEFAULT 'GAME1'", () => {});
+          db.run("ALTER TABLE rooms ADD COLUMN created_by_email TEXT DEFAULT 'anonymous@google.com'", () => {});
           db.run("ALTER TABLE players ADD COLUMN accumulated_score INTEGER DEFAULT 0", () => {});
           db.run("ALTER TABLE players ADD COLUMN game2_state_json TEXT", () => {});
           

@@ -11,38 +11,6 @@
   <!-- Embedded Confetti Canvas -->
   <canvas id="confetti-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 100;"></canvas>
 
-  <!-- Direct URL Passcode Protection Overlay -->
-  <div id="admin-gate-overlay" class="modal-backdrop" style="display: none; background: rgba(4, 6, 12, 0.95); backdrop-filter: blur(20px);">
-    <div class="glass-panel modal-content" style="max-width: 440px; width: 90%; text-align: center; padding: 3rem;">
-      <div style="width: 70px; height: 70px; border-radius: 50%; background: rgba(0, 240, 255, 0.1); border: 1px solid var(--accent-cyan); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem;">
-        <span style="color: var(--accent-cyan); font-size: 2rem; font-weight: bold; font-family: 'Orbitron', sans-serif;">🛡️</span>
-      </div>
-      <h2 class="brand-font" style="font-size: 1.4rem; color: #fff; margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,240,255,0.3);">
-        ADMINISTRATOR ACCESS
-      </h2>
-      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.5;">
-        This page contains command and projector functions. Please verify your administrative passcode to proceed.
-      </p>
-      
-      <div class="input-group" style="margin-bottom: 2rem; text-align: left;">
-        <label for="admin-gate-passcode" class="brand-font" style="font-size: 0.75rem; color: var(--text-secondary); text-transform: uppercase;">Passcode</label>
-        <input type="password" id="admin-gate-passcode" class="input-control" placeholder="••••••••" style="text-align: center; font-family: 'Orbitron', sans-serif; letter-spacing: 5px; font-weight: bold; border-color: rgba(0, 240, 255, 0.25);">
-        <p id="gate-error-msg" style="color: #ff3366; font-size: 0.75rem; font-family: 'Orbitron', sans-serif; text-transform: uppercase; letter-spacing: 1px; margin-top: 0.6rem; display: none; text-align: center;">
-          ⚡ Access Denied: Invalid Passcode
-        </p>
-      </div>
-      
-      <div style="display: flex; gap: 1rem;">
-        <button id="gate-cancel-btn" class="btn btn-outline" style="flex: 1; padding: 0.7rem;">
-          Return Home
-        </button>
-        <button id="gate-submit-btn" class="btn btn-cyan" style="flex: 1; padding: 0.7rem; box-shadow: 0 0 15px rgba(0,240,255,0.4);">
-          Authorize
-        </button>
-      </div>
-    </div>
-  </div>
-
   <div class="container" style="max-width: 1200px;">
     <!-- Top Header Navigation -->
     <div class="header-bar">
@@ -50,8 +18,14 @@
         <span style="display:inline-block; width:12px; height:12px; background-color:var(--accent-purple); border-radius:50%; box-shadow:0 0 10px var(--accent-purple);"></span>
         ADMIN PANEL
       </div>
-      <div id="room-code-display" class="room-display" style="font-size: 1.4rem; padding: 0.7rem 2rem;">
-        ROOM CODE: ----
+      <div style="display: flex; align-items: center; gap: 1rem;">
+        <!-- Hidden Analytics Portal trigger button -->
+        <button id="open-analytics-btn" class="btn btn-outline" style="font-size: 0.8rem; padding: 0.5rem 1rem; border-color: var(--accent-cyan); color: var(--accent-cyan); display: flex; align-items: center; gap: 0.4rem;">
+          📊 Analytics Portal
+        </button>
+        <div id="room-code-display" class="room-display" style="font-size: 1.4rem; padding: 0.7rem 2rem;">
+          ROOM CODE: ----
+        </div>
       </div>
     </div>
 
@@ -441,36 +415,60 @@
         </div>
       </div>
 
-      <!-- Overall Cumulative Scoreboard Modal -->
-      <div id="overall-scoreboard-modal" class="modal-backdrop" style="display: none; z-index: 10000; align-items: center; justify-content: center;">
-        <div class="glass-panel modal-content" style="max-width: 650px; width: 90%; padding: 2rem; border-color: var(--accent-purple); position: relative;">
-          <button id="scoreboard-close-btn" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+      <!-- Hidden Analytics Portal Modal -->
+      <div id="analytics-portal-modal" class="modal-backdrop" style="display: none; z-index: 10000; align-items: center; justify-content: center; background: rgba(4, 6, 12, 0.95); backdrop-filter: blur(20px);">
+        <div class="glass-panel modal-content" style="max-width: 950px; width: 92%; padding: 2.5rem; border-color: var(--accent-cyan); position: relative; max-height: 90vh; overflow-y: auto;">
+          <button id="analytics-close-btn" style="position: absolute; top: 1.2rem; right: 1.2rem; background: none; border: none; color: var(--text-muted); font-size: 1.8rem; cursor: pointer; transition: color 0.2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='var(--text-muted)'">&times;</button>
           
-          <div style="text-align: center; margin-bottom: 1.5rem;">
-            <h2 class="brand-font" style="font-size: 1.4rem; color: var(--accent-purple); margin-bottom: 0.3rem;">
-              🏆 OVERALL CUMULATIVE SCOREBOARD
+          <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="display: inline-flex; align-items: center; justify-content: center; width: 50px; height: 50px; border-radius: 50%; background: rgba(0, 240, 255, 0.1); border: 1px solid var(--accent-cyan); margin-bottom: 0.8rem;">
+              <span style="font-size: 1.5rem;">📈</span>
+            </div>
+            <h2 class="brand-font" style="font-size: 1.6rem; color: var(--accent-cyan); margin-bottom: 0.3rem;">
+              SYSTEM ANALYTICS PORTAL
             </h2>
-            <p style="font-size: 0.8rem; color: var(--text-secondary);">
-              Accumulated scores across all played rounds for this room session:
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">
+              Internal telemetry tracking room creation dates, creator IAP identities, and active competitor counts.
             </p>
           </div>
 
-          <div style="max-height: 350px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid var(--glass-border); padding: 0.5rem;">
-            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
-              <thead>
-                <tr style="border-bottom: 1px solid var(--glass-border); color: var(--accent-cyan); font-family: 'Orbitron', sans-serif; font-size: 0.75rem;">
-                  <th style="padding: 0.75rem; text-align: center;">RANK</th>
-                  <th style="padding: 0.75rem;">COMPETITOR</th>
-                  <th style="padding: 0.75rem; text-align: right;">CUMULATIVE SCORE</th>
-                </tr>
-              </thead>
-              <tbody id="overall-scoreboard-tbody">
-                <!-- Rows load dynamically -->
-                <tr>
-                  <td colspan="3" style="text-align: center; padding: 2rem; color: var(--text-muted);">No match data recorded yet. Launch a game to score points!</td>
-                </tr>
-              </tbody>
-            </table>
+          <!-- Analytics Content Layout -->
+          <div style="display: flex; flex-direction: column; gap: 2rem;">
+            
+            <!-- Section 1: Top 10 Creators Chart -->
+            <div class="glass-panel" style="padding: 1.5rem; background: rgba(10, 15, 30, 0.6); border: 1px solid rgba(0, 240, 255, 0.2);">
+              <h3 class="brand-font" style="font-size: 1.1rem; color: var(--accent-purple); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                🏆 TOP 10 ROOM CREATORS (@google.com)
+              </h3>
+              <div id="analytics-chart-container" style="display: flex; flex-direction: column; gap: 0.8rem;">
+                <!-- Bar chart items will render dynamically -->
+                <div style="color: var(--text-muted); text-align: center; padding: 1.5rem;">Loading analytics metrics...</div>
+              </div>
+            </div>
+
+            <!-- Section 2: Latest Creation Dates & Active Competitors Table -->
+            <div class="glass-panel" style="padding: 1.5rem; background: rgba(10, 15, 30, 0.6); border: 1px solid rgba(188, 0, 221, 0.2);">
+              <h3 class="brand-font" style="font-size: 1.1rem; color: var(--accent-cyan); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                🗓️ LATEST ROOM CREATIONS & PARTICIPANT STATS
+              </h3>
+              <div style="max-height: 280px; overflow-y: auto; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3);">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+                  <thead>
+                    <tr style="border-bottom: 1px solid var(--glass-border); color: var(--accent-cyan); font-family: 'Orbitron', sans-serif; font-size: 0.75rem; background: rgba(0,240,255,0.05);">
+                      <th style="padding: 0.75rem; text-align: center;">ROOM</th>
+                      <th style="padding: 0.75rem;">CREATED BY (IAP EMAIL)</th>
+                      <th style="padding: 0.75rem; text-align: center;">MODE</th>
+                      <th style="padding: 0.75rem; text-align: center;">JOINED USERS</th>
+                      <th style="padding: 0.75rem; text-align: right;">CREATED DATE & TIME</th>
+                    </tr>
+                  </thead>
+                  <tbody id="analytics-rooms-tbody">
+                    <!-- Rows will load dynamically -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>

@@ -29,11 +29,115 @@ if (!fs.existsSync(assetsDir)) {
   fs.mkdirSync(assetsDir, { recursive: true });
 }
 
+// Helper function to extract user email from Google Cloud IAP headers or dev fallback
+function getIapUserEmail(req) {
+  // Cloud IAP sets 'x-goog-authenticated-user-email' header (format: "accounts.google.com:username@google.com")
+  const iapHeader = req.headers['x-goog-authenticated-user-email'];
+  if (iapHeader) {
+    const email = iapHeader.replace(/^accounts\.google\.com:/, '').trim();
+    if (email) return email.toLowerCase();
+  }
+  
+  // Custom header / query fallback for testing or proxy setups
+  const devHeader = req.headers['x-user-email'];
+  if (devHeader) return devHeader.trim().toLowerCase();
+
+  // Query parameter fallback
+  if (req.query && req.query.email) return req.query.email.trim().toLowerCase();
+
+  // Default fallback if running unauthenticated locally
+  return 'roycheung@google.com';
+}
+
+// IAP Admin Protection Middleware
+function requireGoogleDomainAdmin(req, res, next) {
+  const userEmail = getIapUserEmail(req);
+  console.log(`[IAP Security] User requesting Admin access: ${userEmail}`);
+  
+  if (userEmail.endsWith('@google.com')) {
+    req.userEmail = userEmail;
+    next();
+  } else {
+    res.status(403).send(`
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>403 Access Denied - GE Adoption Game</title>
+        <link rel="stylesheet" href="/css/style.css">
+      </head>
+      <body style="display:flex; align-items:center; justify-content:center; min-height:100vh; background:#04060c; color:#fff; font-family:'Inter',sans-serif; text-align:center;">
+        <div class="glass-panel" style="max-width:500px; padding:3rem; border:1px solid #ff3366;">
+          <h1 class="brand-font" style="color:#ff3366; font-size:1.8rem; margin-bottom:1rem;">⚡ 403 ACCESS DENIED</h1>
+          <p style="color:var(--text-secondary); line-height:1.6; margin-bottom:1.5rem;">
+            Admin command functions are strictly restricted to <strong>@google.com</strong> accounts via Identity-Aware Proxy (IAP).
+          </p>
+          <p style="font-size:0.85rem; color:#888;">Logged in as: <code>${userEmail || 'Unauthenticated'}</code></p>
+          <a href="/" class="btn btn-cyan" style="display:inline-block; margin-top:2rem;">Return to Player Portal</a>
+        </div>
+      </body>
+      </html>
+    `);
+  }
+}
+
 // REST APIs
+app.get('/api/auth/me', (req, res) => {
+  const email = getIapUserEmail(req);
+  const isAdmin = email.endsWith('@google.com');
+  res.json({ email, isAdmin });
+});
+
 app.get('/api/rooms', (req, res) => {
   db.all('SELECT * FROM rooms ORDER BY created_at DESC', (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
+  });
+});
+
+app.get('/api/analytics/stats', (req, res) => {
+  const email = getIapUserEmail(req);
+  if (!email.endsWith('@google.com')) {
+    return res.status(403).json({ error: 'Access restricted to @google.com domain users.' });
+  }
+
+  // 1. Latest Room Creation & User Join Details Table Data
+  const sqlLatestRooms = `
+    SELECT 
+      r.id AS room_id,
+      r.created_by_email,
+      r.game_mode,
+      r.status,
+      r.created_at,
+      COUNT(p.username) AS user_count
+    FROM rooms r
+    LEFT JOIN players p ON r.id = p.room_id
+    GROUP BY r.id
+    ORDER BY r.created_at DESC
+  `;
+
+  // 2. Top 10 Creators Chart Data (Total games created per email)
+  const sqlTopCreators = `
+    SELECT 
+      created_by_email,
+      COUNT(id) AS total_games_created
+    FROM rooms
+    WHERE created_by_email IS NOT NULL AND created_by_email != ''
+    GROUP BY created_by_email
+    ORDER BY total_games_created DESC
+    LIMIT 10
+  `;
+
+  db.all(sqlLatestRooms, [], (err1, latestRooms) => {
+    if (err1) return res.status(500).json({ error: err1.message });
+
+    db.all(sqlTopCreators, [], (err2, topCreators) => {
+      if (err2) return res.status(500).json({ error: err2.message });
+
+      res.json({
+        latestRooms,
+        topCreators
+      });
+    });
   });
 });
 
@@ -63,7 +167,8 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-app.get('/admin', (req, res) => {
+// Admin panel protected by IAP domain check
+app.get('/admin', requireGoogleDomainAdmin, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
@@ -138,19 +243,28 @@ io.on('connection', (socket) => {
   console.log(`Socket client connected: ${socket.id}`);
 
   // 1. Admin Joins Room Control Channel
-  socket.on('admin-join', (roomId) => {
-    console.log(`Admin joining room: ${roomId}`);
+  socket.on('admin-join', ({ roomId, creatorEmail }) => {
+    console.log(`Admin joining room: ${roomId} (Creator: ${creatorEmail || 'anonymous@google.com'})`);
     socket.join(`admin-${roomId}`);
     socket.join(roomId);
+
+    const email = (creatorEmail || 'anonymous@google.com').toLowerCase();
 
     // Initialize or verify room
     db.get('SELECT * FROM rooms WHERE id = ?', [roomId], (err, room) => {
       if (err || !room) {
-        db.run('INSERT OR REPLACE INTO rooms (id, status, game_mode) VALUES (?, ?, ?)', [roomId, 'LOBBY', 'GAME1'], () => {
+        db.run('INSERT OR REPLACE INTO rooms (id, status, game_mode, created_by_email) VALUES (?, ?, ?, ?)', [roomId, 'LOBBY', 'GAME1', email], () => {
           sendRoomStateToAdmin(roomId);
         });
       } else {
-        sendRoomStateToAdmin(roomId);
+        // Update creator email if not set
+        if (!room.created_by_email || room.created_by_email === 'anonymous@google.com') {
+          db.run('UPDATE rooms SET created_by_email = ? WHERE id = ?', [email, roomId], () => {
+            sendRoomStateToAdmin(roomId);
+          });
+        } else {
+          sendRoomStateToAdmin(roomId);
+        }
       }
     });
   });

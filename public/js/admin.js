@@ -162,61 +162,149 @@ function setupGameSelectionCards() {
 // Direct URL Passcode Protection Logic
 const gateOverlay = document.getElementById('admin-gate-overlay');
 const gatePasscodeField = document.getElementById('admin-gate-passcode');
-const gateErrorMsg = document.getElementById('gate-error-msg');
-const gateSubmitBtn = document.getElementById('gate-submit-btn');
-const gateCancelBtn = document.getElementById('gate-cancel-btn');
+let currentUserEmail = 'roycheung@google.com';
 
-function checkAdminGate() {
+async function checkAdminGate() {
   if (roomId && roomCodeDisplay) {
     roomCodeDisplay.textContent = `ROOM CODE: ${roomId}`;
   }
   setupGameSelectionCards();
-  if (sessionStorage.getItem('isAdminAuthorized') === 'true') {
-    initAdminPortal();
-  } else {
-    gateOverlay.style.display = 'flex';
-    gatePasscodeField.focus();
-    
-    // Wire up events
-    gateSubmitBtn.addEventListener('click', verifyGatePasscode);
-    gateCancelBtn.addEventListener('click', () => {
-      window.location.href = '/';
-    });
-    gatePasscodeField.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        verifyGatePasscode();
-      }
-    });
-  }
-}
+  setupAnalyticsPortal();
 
-function verifyGatePasscode() {
-  const passcode = gatePasscodeField.value.trim();
-  if (passcode === 'MrRoyRoy') {
-    sessionStorage.setItem('isAdminAuthorized', 'true');
-    gateOverlay.style.display = 'none';
-    initAdminPortal();
-  } else {
-    gateErrorMsg.style.display = 'block';
-    gatePasscodeField.style.borderColor = '#ff3366';
-    gatePasscodeField.classList.add('shake-anim');
-    setTimeout(() => {
-      gatePasscodeField.classList.remove('shake-anim');
-    }, 400);
+  try {
+    const res = await fetch('/api/auth/me');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.email) currentUserEmail = data.email;
+      
+      if (!data.isAdmin) {
+        showCustomNotification('Access Restricted: @google.com login required', 'error');
+        setTimeout(() => { window.location.href = '/'; }, 2000);
+        return;
+      }
+    }
+  } catch (err) {
+    console.error('Auth verification error:', err);
   }
+
+  initAdminPortal();
 }
 
 function initAdminPortal() {
   if (roomId) {
     roomCodeDisplay.textContent = `ROOM CODE: ${roomId}`;
     setupGameSelectionCards();
-    socket.emit('admin-join', roomId);
+    socket.emit('admin-join', { roomId, creatorEmail: currentUserEmail });
     loadMasterImagesCatalog();
   } else {
     showCustomNotification('No Room Code provided. Returning to home page.', 'error');
     setTimeout(() => {
       window.location.href = '/';
     }, 2500);
+  }
+}
+
+// Analytics Portal Modal Wiring
+function setupAnalyticsPortal() {
+  const openBtn = document.getElementById('open-analytics-btn');
+  const closeBtn = document.getElementById('analytics-close-btn');
+  const modal = document.getElementById('analytics-portal-modal');
+
+  if (openBtn && modal) {
+    openBtn.onclick = () => {
+      modal.style.display = 'flex';
+      loadAnalyticsData();
+    };
+  }
+
+  if (closeBtn && modal) {
+    closeBtn.onclick = () => {
+      modal.style.display = 'none';
+    };
+  }
+
+  if (modal) {
+    modal.onclick = (e) => {
+      if (e.target === modal) modal.style.display = 'none';
+    };
+  }
+}
+
+async function loadAnalyticsData() {
+  const chartContainer = document.getElementById('analytics-chart-container');
+  const tbody = document.getElementById('analytics-rooms-tbody');
+
+  if (chartContainer) chartContainer.innerHTML = '<div style="color: var(--accent-cyan); text-align: center; padding: 1rem;">Fetching telemetry data...</div>';
+  if (tbody) tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 1rem; color: var(--text-muted);">Loading records...</td></tr>';
+
+  try {
+    const res = await fetch('/api/analytics/stats');
+    if (!res.ok) throw new Error('Failed to load analytics metrics');
+    const { latestRooms, topCreators } = await res.json();
+
+    // 1. Render Top 10 Creators Chart
+    if (chartContainer) {
+      chartContainer.innerHTML = '';
+      if (!topCreators || topCreators.length === 0) {
+        chartContainer.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 1rem;">No room creators recorded yet.</div>';
+      } else {
+        const maxCreated = Math.max(...topCreators.map(c => c.total_games_created), 1);
+
+        topCreators.forEach((creator, idx) => {
+          const percentage = Math.round((creator.total_games_created / maxCreated) * 100);
+          const barRow = document.createElement('div');
+          barRow.style.display = 'flex';
+          barRow.style.flexDirection = 'column';
+          barRow.style.gap = '0.3rem';
+
+          barRow.innerHTML = `
+            <div style="display: flex; justify-content: space-between; font-size: 0.8rem; font-family: 'Orbitron', sans-serif;">
+              <span style="color: #fff; font-weight: bold;">#${idx + 1} ${escapeHTML(creator.created_by_email)}</span>
+              <span style="color: var(--accent-cyan); font-weight: bold;">${creator.total_games_created} GAME${creator.total_games_created > 1 ? 'S' : ''}</span>
+            </div>
+            <div style="width: 100%; height: 12px; background: rgba(255,255,255,0.05); border-radius: 6px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1);">
+              <div style="width: ${Math.max(percentage, 8)}%; height: 100%; background: linear-gradient(90deg, var(--accent-cyan), var(--accent-purple)); border-radius: 6px; transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);"></div>
+            </div>
+          `;
+          chartContainer.appendChild(barRow);
+        });
+      }
+    }
+
+    // 2. Render Latest Rooms Table
+    if (tbody) {
+      tbody.innerHTML = '';
+      if (!latestRooms || latestRooms.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 1.5rem; color: var(--text-muted);">No rooms found in database history.</td></tr>';
+      } else {
+        latestRooms.forEach((room) => {
+          const tr = document.createElement('tr');
+          tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+
+          const formattedDate = new Date(room.created_at).toLocaleString('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit'
+          });
+
+          tr.innerHTML = `
+            <td style="padding: 0.7rem 0.5rem; text-align: center; font-family: 'Orbitron', sans-serif; font-weight: bold; color: var(--accent-cyan);">#${room.room_id}</td>
+            <td style="padding: 0.7rem 0.5rem; font-weight: 500; color: #fff;">${escapeHTML(room.created_by_email || 'anonymous@google.com')}</td>
+            <td style="padding: 0.7rem 0.5rem; text-align: center;"><span style="background: rgba(188,0,221,0.15); color: var(--accent-purple); border: 1px solid var(--accent-purple); padding: 0.2rem 0.5rem; border-radius: 10px; font-size: 0.7rem; font-family: 'Orbitron', sans-serif;">${room.game_mode}</span></td>
+            <td style="padding: 0.7rem 0.5rem; text-align: center; font-family: 'Orbitron', sans-serif; font-weight: bold; color: var(--accent-gold);">${room.user_count} USER${room.user_count !== 1 ? 'S' : ''}</td>
+            <td style="padding: 0.7rem 0.5rem; text-align: right; color: var(--text-secondary); font-size: 0.75rem;">${formattedDate}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+    }
+
+  } catch (err) {
+    console.error('Error loading analytics telemetry:', err);
+    if (chartContainer) chartContainer.innerHTML = `<div style="color: #ff3366; text-align: center;">Error loading chart: ${err.message}</div>`;
   }
 }
 

@@ -84,6 +84,8 @@
 - [x] Fixed `end-game` event processing for Game 2 to ensure "End Submissions & Show Scoreboard" transitions Admin directly to the Championship Podium.
 - [x] Added `white-space: nowrap; flex-shrink: 0;` to enforce single-line layout for the `FINISHED: 0 / X` badge in the Admin Game 2 view.
 
+- [x] Added git release tag `v2.0.0` and tagged Cloud Run service/traffic revision (`v2-0-0`) with release labels for stable multi-game deployment.
+
 ### Active/Next Tasks
 - [ ] Monitor live Cloud Run server telemetry during active multi-game workshops.
 - [ ] Expand optional custom prompt challenge scenarios for future training sessions.
