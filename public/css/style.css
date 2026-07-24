@@ -754,6 +754,11 @@ select.input-control option {
   .image-card {
     max-height: 130px !important;
   }
+  .poster-image-row, .poster-page .grid-2 {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 0.8rem !important;
+  }
   #game1-poster-comparisons, #game2-poster-techniques {
     margin-bottom: 0.6rem !important;
   }

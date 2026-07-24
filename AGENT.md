@@ -62,7 +62,9 @@
 - [x] Generated paper cutout character artwork (`bowser-cutout.jpg`, `peach-cutout.jpg`, `mario-cutout.jpg`) via `gemini-3.5-flash-image-lite` for Bowser (1st), Peach (2nd), and Mario (3rd) with floating CSS micro-animations on the Game 2 reveal podium.
 - [x] Removed header submission lock button in User Portal and added manual `PROCEED TO NEXT STAGE ➔` action bar allowing users ample time to review AI responses before advancing.
 - [x] Passed `activeMasterIndex` from server room state inside `player-reveal` socket event, ensuring user poster always displays the exact round master image rather than defaulting to index 0 ("Spirited Anime Shrine").
-- [x] Optimized `@media print` rules with `size: portrait; height: 100vh; page-break-inside: avoid;` and scaled print image heights to guarantee poster certificate prints strictly on 1 single page.
+- [x] Optimized `@media print` rules with `size: portrait; height: 100vh; page-break-inside: avoid;` and enforced `.poster-image-row` 2-column grid (`grid-template-columns: 1fr 1fr;`) to place Master Target and Your Generation horizontally side-by-side.
+- [x] Fixed Game 1 `start-game` server handler to pick a fresh random target image (from 1 to 20) on every round start, resolving repeated "Spirited Anime Shrine" image assignments.
+- [x] Fixed `sendRoomStateToAdmin` in `server.js` to find active master by `m.index === room.active_master_index` rather than array offset, fixing comparison image mismatches.
 - [x] Removed literal `✦` character in front of `<li>` sentences in `user.html` and `admin.html` IMAGE GENERATION TIPS, leaving styling cleanly handled by CSS pseudo-elements.
 - [x] Fixed real-time Game 2 score synchronization on Admin Hacking Track chips by reading `st.totalScore` dynamically from `game2_state_json`.
 - [x] Fixed `end-game` event processing for Game 2 to ensure "End Submissions & Show Scoreboard" transitions Admin directly to the Championship Podium.

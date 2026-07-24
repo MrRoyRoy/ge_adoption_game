@@ -209,15 +209,19 @@ io.on('connection', (socket) => {
   socket.on('start-game', ({ roomId, masterIndex, gameMode }) => {
     console.log(`Admin starting game in room [${roomId}] for mode [${gameMode || 'GAME1'}]`);
     
-    // Normalize masterIndex to 1-based index (1 to 20) matching masterLibrary index property
-    let selectedMasterIndex = parseInt(masterIndex, 10);
-    if (isNaN(selectedMasterIndex) || selectedMasterIndex < 1 || selectedMasterIndex > masterLibrary.length) {
-      // Pick a random master image (1 to masterLibrary.length)
-      const randomMaster = masterLibrary[Math.floor(Math.random() * masterLibrary.length)];
-      selectedMasterIndex = randomMaster ? randomMaster.index : 1;
-    }
-
     const selectedMode = gameMode || 'GAME1';
+    let selectedMasterIndex;
+
+    if (selectedMode === 'GAME1') {
+      // Pick a fresh random master image (1 to masterLibrary.length)
+      const randomMaster = masterLibrary[Math.floor(Math.random() * masterLibrary.length)];
+      selectedMasterIndex = randomMaster ? randomMaster.index : (Math.floor(Math.random() * masterLibrary.length) + 1);
+    } else {
+      selectedMasterIndex = parseInt(masterIndex, 10);
+      if (isNaN(selectedMasterIndex) || selectedMasterIndex < 1 || selectedMasterIndex > masterLibrary.length) {
+        selectedMasterIndex = 1;
+      }
+    }
 
     // Initial Game 2 state JSON structure
     const initialGame2State = JSON.stringify({
@@ -598,7 +602,7 @@ function sendRoomStateToAdmin(roomId) {
       (playerErr, players) => {
         if (playerErr) return;
 
-        const activeMaster = masterLibrary[room.active_master_index] || masterLibrary[0];
+        const activeMaster = masterLibrary.find(m => m.index === room.active_master_index) || masterLibrary[0];
 
         io.to(`admin-${roomId}`).emit('room-state', {
           roomId: room.id,
