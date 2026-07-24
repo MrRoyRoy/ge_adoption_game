@@ -61,6 +61,7 @@
 - [x] Implemented Game 2 Admin End Submission 3-Stage Track (Spell-Lock, Airship Fleet, Bowser Dungeon) over an animated ambient backdrop with real-time player chips.
 - [x] Generated paper cutout character artwork (`bowser-cutout.jpg`, `peach-cutout.jpg`, `mario-cutout.jpg`) via `gemini-3.5-flash-image-lite` for Bowser (1st), Peach (2nd), and Mario (3rd) with floating CSS micro-animations on the Game 2 reveal podium.
 - [x] Removed header submission lock button in User Portal and added manual `PROCEED TO NEXT STAGE ➔` action bar allowing users ample time to review AI responses before advancing.
+- [x] Completely removed Return to Lobby button from User Portal for Game 1 poster certificate, while enabling it for Game 2 with custom confirmation modal and socket re-join synchronization (`socket.emit('player-join')`).
 - [x] Aligned "AI Director Commentary" directly below comparison images in Game 1 poster certificate (`justify-content: flex-start; gap: 0.5rem;`), removing the large vertical gap caused by stretched column flex spacing.
 - [x] Reframed Game 2 technique titles, explanations ("Why Tested"), expected learning outcomes, and task clear outcomes in `user.html` and `server.js` to focus positively on constructive prompt engineering skills (PTCF protocol mastery, output format restriction/enrichment, and scenario re-framing).
 - [x] Passed `activeMasterIndex` from server room state inside `player-reveal` socket event, ensuring user poster always displays the exact round master image rather than defaulting to index 0 ("Spirited Anime Shrine").

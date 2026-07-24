@@ -518,9 +518,19 @@ function populateAndShowPoster(score, prompt, userImage, evaluation, game2State,
 
   const userReturnLobbyBtn = document.getElementById('user-return-lobby-btn');
   if (userReturnLobbyBtn) {
-    userReturnLobbyBtn.onclick = () => {
-      showSection('lobby');
-    };
+    if (currentActiveGameMode === 'GAME1' || gameMode === 'GAME1') {
+      userReturnLobbyBtn.style.display = 'none';
+    } else {
+      userReturnLobbyBtn.style.display = 'inline-flex';
+      userReturnLobbyBtn.onclick = () => {
+        showCustomConfirm('Return to Lobby', 'Are you sure you want to return to the room lobby?', () => {
+          showSection('lobby');
+          if (roomId && username) {
+            socket.emit('player-join', { roomId, username });
+          }
+        }, 'CONFIRM');
+      };
+    }
   }
 
   // Trigger Dramatic Odometer Shuffle directly on the Poster!
