@@ -762,6 +762,10 @@ select.input-control option {
   #game1-poster-comparisons, #game2-poster-techniques {
     margin-bottom: 0.6rem !important;
   }
+  #game1-poster-comparisons .grid-2 > div:first-child {
+    justify-content: flex-start !important;
+    gap: 0.5rem !important;
+  }
   .poster-watermark {
     display: none !important;
   }
