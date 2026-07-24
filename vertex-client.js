@@ -54,36 +54,48 @@ async function generateImage(prompt) {
 async function evaluateImages(masterBase64, userBase64, userPrompt) {
   console.log(`Calling Gemini evaluation model [${GEMINI_MODEL}]...`);
   
-  const systemInstruction = `You are an expert AI Art Director and prompt engineering coach. Your task is to evaluate a user's generated image against a "Master Image" that they tried to recreate using prompt engineering.
-  Analyze BOTH images.
-  Generate your response ONLY as a JSON block with the following fields:
-  {
-    "score": <Integer from 1-100>,
-    "rubric": {
-      "styleAndAesthetic": <Integer from 1-25>,
-      "compositionAndLayout": <Integer from 1-25>,
-      "colorAndLighting": <Integer from 1-25>,
-      "subjectAndAccuracy": <Integer from 1-25>
-    },
-    "suggestions": [
-      "Detail 1 regarding prompt keyword adjustments",
-      "Detail 2 regarding lighting/style modifications",
-      "Detail 3 regarding camera angle/rendering descriptors"
-    ],
-    "commentary": "A short, professional, and encouraging summary of their attempt."
-  }`;
+  const systemInstruction = `You are an expert AI Art Director and prompt engineering coach. Your task is to evaluate a user's generated image (Image 2) against the benchmark "Master Target Image" (Image 1) that they tried to recreate using prompt engineering.
+
+CRITICAL IMAGE IDENTIFICATION & ROLE BOUNDARIES:
+- Image 1 (First Image): MASTER TARGET ARTWORK. This is the official target benchmark reference image that the user was trying to match.
+- Image 2 (Second Image): USER GENERATED ARTWORK. This is the image created by the user's submitted prompt.
+
+EVALUATION RULES:
+1. Compare Image 2 (User Generation) against Image 1 (Master Target).
+2. Rate how closely Image 2 matches Image 1 in terms of subject, style, color palette, camera composition, and atmospheric lighting.
+3. In your commentary and suggestions, evaluate Image 2 relative to Image 1. Praise what Image 2 got right from Image 1, identify what Image 2 missed compared to Image 1, and suggest prompt keywords to make Image 2 match Image 1 more closely.
+4. DO NOT confuse Image 1 and Image 2. Always treat Image 1 as the Master Benchmark target and Image 2 as the User Attempt.
+
+Generate your response ONLY as a JSON block with the following fields:
+{
+  "score": <Integer from 1-100 based on similarity of Image 2 to Image 1>,
+  "rubric": {
+    "styleAndAesthetic": <Integer from 1-25>,
+    "compositionAndLayout": <Integer from 1-25>,
+    "colorAndLighting": <Integer from 1-25>,
+    "subjectAndAccuracy": <Integer from 1-25>
+  },
+  "suggestions": [
+    "Specific keyword suggestion 1 to make Image 2 match Image 1 better",
+    "Specific keyword suggestion 2 to adjust lighting/style toward Image 1",
+    "Specific keyword suggestion 3 to fix composition or details"
+  ],
+  "commentary": "A short, professional summary evaluating the user's generation (Image 2) against the target master artwork (Image 1)."
+}`;
 
   try {
     const response = await ai.models.generateContent({
       model: GEMINI_MODEL,
       contents: [
         { text: `User Prompt Submitted: "${userPrompt}"` },
+        { text: `[IMAGE 1: MASTER TARGET BENCHMARK ARTWORK - This is the reference target image]` },
         {
           inlineData: {
             mimeType: 'image/jpeg',
             data: masterBase64
           }
         },
+        { text: `[IMAGE 2: USER GENERATED ARTWORK - This is the user's generated image from their prompt. Evaluate this image against Image 1]` },
         {
           inlineData: {
             mimeType: 'image/jpeg',
