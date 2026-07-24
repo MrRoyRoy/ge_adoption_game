@@ -187,6 +187,16 @@ async function checkAdminGate() {
     console.error('Auth verification error:', err);
   }
 
+  // Only show Analytics Portal button if logged in user is roycheung@google.com
+  const openAnalyticsBtn = document.getElementById('open-analytics-btn');
+  if (openAnalyticsBtn) {
+    if (currentUserEmail.toLowerCase() === 'roycheung@google.com') {
+      openAnalyticsBtn.style.display = 'flex';
+    } else {
+      openAnalyticsBtn.style.display = 'none';
+    }
+  }
+
   initAdminPortal();
 }
 
