@@ -324,6 +324,10 @@ if (game2ProceedBtn) {
     const { gameState, taskConfig, rankTitle } = pendingNextStageData;
     pendingNextStageData = null;
     if (game2SuccessActionBar) game2SuccessActionBar.style.display = 'none';
+    const chatTerminalBox = document.getElementById('game2-chat-terminal-box');
+    if (chatTerminalBox) {
+      chatTerminalBox.style.height = '280px';
+    }
 
     // If completed all tasks, navigate to submitted screen
     if (gameState.completed) {
@@ -380,7 +384,14 @@ socket.on('game2-update', ({ gameState, taskConfig, isGoalAchieved, latestRespon
     pendingNextStageData = { gameState, taskConfig, rankTitle };
     if (game2SuccessActionBar) {
       game2SuccessActionBar.style.display = 'block';
-      game2SuccessActionBar.scrollIntoView({ behavior: 'smooth' });
+    }
+    const chatTerminalBox = document.getElementById('game2-chat-terminal-box');
+    if (chatTerminalBox) {
+      chatTerminalBox.style.height = '200px';
+    }
+    const stateGame2Section = document.getElementById('state-playing-game2');
+    if (stateGame2Section) {
+      stateGame2Section.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   } else {
     updateGame2UI(gameState, taskConfig, rankTitle, false);

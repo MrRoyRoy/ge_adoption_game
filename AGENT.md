@@ -61,6 +61,10 @@
 - [x] Implemented Game 2 Admin End Submission 3-Stage Track (Spell-Lock, Airship Fleet, Bowser Dungeon) over an animated ambient backdrop with real-time player chips.
 - [x] Generated paper cutout character artwork (`bowser-cutout.jpg`, `peach-cutout.jpg`, `mario-cutout.jpg`) via `gemini-3.5-flash-image-lite` for Bowser (1st), Peach (2nd), and Mario (3rd) with floating CSS micro-animations on the Game 2 reveal podium.
 - [x] Removed header submission lock button in User Portal and added manual `PROCEED TO NEXT STAGE ➔` action bar allowing users ample time to review AI responses before advancing.
+- [x] Fixed Game 2 layout scrolling when "TRIAL CLEARED! READ THE AI RESPONSE ABOVE BEFORE PROCEEDING" action bar appears:
+  - Removed aggressive `game2SuccessActionBar.scrollIntoView()` that was pushing top header elements off the top edge of the screen.
+  - Added smooth CSS height transition to `#game2-chat-terminal-box` (`280px` ➔ `200px` when banner is active), absorbing the vertical expansion so the overall card height remains stable.
+  - Anchored viewport scroll to the top of `#state-playing-game2` so all headers and objectives remain 100% visible at the top.
 - [x] Implemented seamless page refresh progress restoration in `user.js`:
   - Removed spectator kick/redirect when rejoining during `REVEAL` or `GALLERY` states.
   - Restored Game 1 evaluation poster certificate and prompt submissions directly from DB on refresh (`join-success`).
