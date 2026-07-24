@@ -418,17 +418,19 @@ p {
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  gap: 1.5rem;
-  height: 400px;
-  margin-top: 3rem;
-  padding: 1rem;
+  gap: 1.8rem;
+  height: auto;
+  min-height: 480px;
+  margin-top: 2rem;
+  margin-bottom: 3.5rem;
+  padding: 1rem 1rem 2rem 1rem;
 }
 
 .podium-step {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 180px;
+  width: 200px;
   transition: all 0.5s ease;
 }
 
@@ -482,11 +484,10 @@ p {
 
 /* 1st Place Specific Styling */
 .podium-1st {
-  height: 280px;
   order: 2;
 }
 .podium-1st .podium-column {
-  height: 100%;
+  height: 220px;
   background: linear-gradient(to top, rgba(255, 183, 0, 0.4), rgba(255, 223, 0, 0.7));
   border: 1px solid var(--accent-gold);
   color: var(--accent-gold);
@@ -498,11 +499,10 @@ p {
 
 /* 2nd Place Specific Styling */
 .podium-2nd {
-  height: 220px;
   order: 1;
 }
 .podium-2nd .podium-column {
-  height: 100%;
+  height: 160px;
   background: linear-gradient(to top, rgba(144, 160, 196, 0.2), rgba(255, 255, 255, 0.35));
   border: 1px solid rgba(255,255,255,0.4);
   color: #fff;
@@ -510,14 +510,14 @@ p {
 
 /* 3rd Place Specific Styling */
 .podium-3rd {
-  height: 170px;
   order: 3;
 }
 .podium-3rd .podium-column {
-  height: 100%;
+  height: 110px;
   background: linear-gradient(to top, rgba(188, 120, 50, 0.2), rgba(200, 130, 80, 0.45));
   border: 1px solid #c88250;
   color: #c88250;
+}
 }
 
 /* Poster Generation Styles */

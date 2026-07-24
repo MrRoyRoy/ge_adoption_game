@@ -234,8 +234,8 @@ async function loadMasterImagesCatalog() {
 
     // Populate dropdown if element exists
     if (masterSelect) {
-      masterSelect.innerHTML = masterImagesList.map((img, i) => 
-        `<option value="${i}">#${img.index} - ${img.title} (${img.difficulty})</option>`
+      masterSelect.innerHTML = masterImagesList.map((img) => 
+        `<option value="${img.index}">#${img.index} - ${img.title} (${img.difficulty})</option>`
       ).join('');
 
       masterSelect.addEventListener('change', () => {
@@ -245,7 +245,7 @@ async function loadMasterImagesCatalog() {
 
     // Initial load preview
     if (masterImagesList.length > 0) {
-      updateMasterPreview(0);
+      updateMasterPreview(masterImagesList[0].index);
     }
   } catch (err) {
     console.error('Error fetching master list:', err);
@@ -253,11 +253,10 @@ async function loadMasterImagesCatalog() {
 }
 
 // Update image preview box on change
-function updateMasterPreview(index) {
-  selectedMasterIndex = index;
-  const image = masterImagesList[index];
-  
+function updateMasterPreview(masterIndex) {
+  const image = masterImagesList.find(img => img.index === Number(masterIndex)) || masterImagesList[0];
   if (image) {
+    selectedMasterIndex = image.index;
     if (masterPreviewImg) {
       masterPreviewImg.src = `assets/master-images/${image.filename}`;
       masterPreviewImg.style.display = 'block';
@@ -281,7 +280,7 @@ if (startGameBtn) {
       return;
     }
     showCustomConfirm('Start Match', `Launch ${selectedGameMode === 'GAME1' ? 'Game 1 (Image Prompting)' : 'Game 2 (Keep Koopa 3 Trials)'} for all players?`, () => {
-      socket.emit('start-game', { roomId, gameMode: selectedGameMode });
+      socket.emit('start-game', { roomId, masterIndex: selectedMasterIndex, gameMode: selectedGameMode });
     });
   });
 }
@@ -502,6 +501,9 @@ if (game2EndGameBtn) {
 
 // Display appropriate section
 function showSection(section) {
+  const confirmModal = document.getElementById('custom-confirm-modal');
+  if (confirmModal) confirmModal.style.display = 'none';
+
   if (adminLobbySec) adminLobbySec.style.display = section === 'lobby' ? 'block' : 'none';
   if (adminPlayingSec) adminPlayingSec.style.display = section === 'playing' ? 'block' : 'none';
   if (adminRevealSec) adminRevealSec.style.display = section === 'reveal' ? 'block' : 'none';
@@ -525,13 +527,6 @@ if (endGameBtn) {
   });
 }
 
-// 3. Admin clicks reset room to go back to lobby / game selection
-if (resetRoundBtn) {
-  resetRoundBtn.addEventListener('click', () => {
-    socket.emit('reset-to-lobby', roomId);
-  });
-}
-
 // 3.5 Admin navigates to Detailed Review & Gallery
 const goToGalleryBtn = document.getElementById('go-to-gallery-btn');
 if (goToGalleryBtn) {
@@ -540,17 +535,9 @@ if (goToGalleryBtn) {
   });
 }
 
-// 3.6 Admin resets round from Gallery view to go back to lobby / game selection
-const galleryResetBtn = document.getElementById('gallery-reset-btn');
-if (galleryResetBtn) {
-  galleryResetBtn.addEventListener('click', () => {
-    socket.emit('reset-to-lobby', roomId);
-  });
-}
-
 // 3.7 Handle Gallery Reveal event
 socket.on('room-gallery', ({ players }) => {
-  const activeMaster = masterImagesList.find(img => img.index === activeMasterIndex) || masterImagesList[selectedMasterIndex];
+  const activeMaster = masterImagesList.find(img => img.index === activeMasterIndex) || masterImagesList[0];
   populateAndShowGallery(players, activeMaster);
 });
 

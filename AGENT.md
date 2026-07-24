@@ -60,8 +60,12 @@
 - [x] Enforced strict 15-character name truncation with `"..."` ellipsis inside competitor badges, while attaching a native hover tooltip `title` attribute to show the complete original username seamlessly.
 - [x] Implemented Game 2 Admin End Submission 3-Stage Track (Spell-Lock, Airship Fleet, Bowser Dungeon) over an animated ambient backdrop with real-time player chips.
 - [x] Generated paper cutout character artwork (`bowser-cutout.jpg`, `peach-cutout.jpg`, `mario-cutout.jpg`) via `gemini-3.5-flash-image-lite` for Bowser (1st), Peach (2nd), and Mario (3rd) with floating CSS micro-animations on the Game 2 reveal podium.
-- [x] Built dedicated Top 10 Keep Koopa Champions leaderboard table and streamlined direct return to lobby.
 - [x] Removed header submission lock button in User Portal and added manual `PROCEED TO NEXT STAGE ➔` action bar allowing users ample time to review AI responses before advancing.
+- [x] Standardized Master Image indexing across server, admin catalog selection, user poster, and gallery views, fixing master image discrepancies.
+- [x] Restored Game 1 Rubric Breakdown, AI Grading Suggestions, and Pro Tips on the Prompt Achievement poster, styled neatly within a single-page print format.
+- [x] Styled Game 2 Pro Tips with clear cyan bullet point indicators (`✦ Few-Shot Context Ingestion...`).
+- [x] Resolved "Return to Lobby" / "Back to Game Selection" modal freeze issue by removing duplicate listeners and auto-hiding modal overlays on lobby transition.
+- [x] Increased height and spacing for the Champion Stage podium (`.podium-container`), eliminating third place overlap with buttons and leaderboard tables below.
 
 ### Active/Next Tasks
 - [ ] Monitor live Cloud Run server telemetry during active multi-game workshops.

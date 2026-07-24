@@ -209,10 +209,12 @@ io.on('connection', (socket) => {
   socket.on('start-game', ({ roomId, masterIndex, gameMode }) => {
     console.log(`Admin starting game in room [${roomId}] for mode [${gameMode || 'GAME1'}]`);
     
-    // For Game 1: if no masterIndex provided, select a random one from master library (0 to 19)
-    let selectedMasterIndex = masterIndex;
-    if (selectedMasterIndex === undefined || selectedMasterIndex === null) {
-      selectedMasterIndex = Math.floor(Math.random() * masterLibrary.length);
+    // Normalize masterIndex to 1-based index (1 to 20) matching masterLibrary index property
+    let selectedMasterIndex = parseInt(masterIndex, 10);
+    if (isNaN(selectedMasterIndex) || selectedMasterIndex < 1 || selectedMasterIndex > masterLibrary.length) {
+      // Pick a random master image (1 to masterLibrary.length)
+      const randomMaster = masterLibrary[Math.floor(Math.random() * masterLibrary.length)];
+      selectedMasterIndex = randomMaster ? randomMaster.index : 1;
     }
 
     const selectedMode = gameMode || 'GAME1';
@@ -264,7 +266,8 @@ io.on('connection', (socket) => {
           return;
         }
 
-        const masterImgFilename = `master-${room.active_master_index}.jpg`;
+        const activeMaster = masterLibrary.find(m => m.index === room.active_master_index) || masterLibrary[0];
+        const masterImgFilename = activeMaster ? activeMaster.filename : `master-${room.active_master_index}.jpg`;
         const masterImgPath = path.join(assetsDir, masterImgFilename);
         
         let masterBase64 = '';

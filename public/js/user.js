@@ -475,10 +475,13 @@ function populateAndShowPoster(score, prompt, userImage, evaluation, game2State,
       posterCommentary.textContent = `Keep Koopa 3 Trials Infiltration Completed! Total Score: ${score || 0} PTS. You mastered key prompt engineering concepts including the PTCF framework, checklist formatting, and adversarial roleplay!`;
     }
   } else {
-    if (game1PosterComparisons) game1PosterComparisons.style.display = 'grid';
+    if (game1PosterComparisons) game1PosterComparisons.style.display = 'block';
     if (game2PosterTechniques) game2PosterTechniques.style.display = 'none';
 
-    if (posterMasterImg) posterMasterImg.src = `assets/master-images/master-${activeMasterIndex || 1}.jpg`;
+    const activeMaster = masterImagesList.find(img => img.index === activeMasterIndex) || masterImagesList[0];
+    if (posterMasterImg) {
+      posterMasterImg.src = activeMaster ? `assets/master-images/${activeMaster.filename}` : `assets/master-images/master-1.jpg`;
+    }
     if (posterUserImg) {
       posterUserImg.src = userImage ? `data:image/jpeg;base64,${userImage}` : NO_IMAGE_SVG;
       posterUserImg.onerror = () => { posterUserImg.src = NO_IMAGE_SVG; };
@@ -493,7 +496,15 @@ function populateAndShowPoster(score, prompt, userImage, evaluation, game2State,
       
       if (posterSuggestions && evaluation.suggestions) {
         posterSuggestions.innerHTML = evaluation.suggestions.map(s => `<li>${highlightSuggestions(s)}</li>`).join('');
+      } else if (posterSuggestions) {
+        posterSuggestions.innerHTML = `<li>✦ Enhance visual descriptions with lighting, angle, and medium keywords for higher fidelity.</li>`;
       }
+    } else if (posterSuggestions) {
+      if (rubricStyle) rubricStyle.textContent = `--/25`;
+      if (rubricComposition) rubricComposition.textContent = `--/25`;
+      if (rubricColor) rubricColor.textContent = `--/25`;
+      if (rubricSubject) rubricSubject.textContent = `--/25`;
+      posterSuggestions.innerHTML = `<li>✦ Specify style tokens like cinematic, ray-traced, 8k render, or watercolor to guide Gemini 3.5.</li>`;
     }
   }
 
