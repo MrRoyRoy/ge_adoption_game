@@ -734,12 +734,22 @@ socket.on('game-revealed', ({ leaderboard }) => {
       game2Tbody.innerHTML = '';
       const top10 = leaderboard.slice(0, 10);
       top10.forEach((p, index) => {
-        let stageText = 'Stage 1';
+        let stageText = '0 Stages Cleared';
         try {
           if (p.game2_state_json) {
             const st = JSON.parse(p.game2_state_json);
-            if (st.completed) stageText = 'Stage 3 Cleared (Completed)';
-            else stageText = `Stage ${st.currentTask || 1}`;
+            if (st.completed) {
+              stageText = 'Stage 3 Cleared (Completed)';
+            } else {
+              let completedCount = 0;
+              if (st.tasks) {
+                if (st.tasks["1"] && st.tasks["1"].completed) completedCount++;
+                if (st.tasks["2"] && st.tasks["2"].completed) completedCount++;
+                if (st.tasks["3"] && st.tasks["3"].completed) completedCount++;
+              }
+              if (completedCount === 0) stageText = 'Stage 1 (In Progress)';
+              else stageText = `Stage ${completedCount} Cleared`;
+            }
           }
         } catch (e) {}
 

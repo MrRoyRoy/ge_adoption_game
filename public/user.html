@@ -333,16 +333,23 @@
             </div>
 
             <!-- Extra Pro-Tips & Google Cloud Learn More Trigger -->
-            <div style="background: rgba(0, 0, 0, 0.5); border: 1px solid var(--glass-border); border-radius: 10px; padding: 1rem 1.2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+            <div style="background: rgba(0, 0, 0, 0.5); border: 1px solid var(--glass-border); border-radius: 10px; padding: 1.2rem; display: flex; flex-direction: column; gap: 1rem;">
               <div>
-                <strong style="color: var(--accent-cyan); font-family: 'Orbitron', sans-serif; font-size: 0.8rem;">🚀 EXTRA PROMPT MASTERY TIPS:</strong>
-                <p style="font-size: 0.78rem; color: var(--text-secondary); margin: 0.2rem 0 0 0; line-height: 1.3;">
-                  Provide 2–3 clear few-shot examples, specify negative constraints, and use Gemini 3.5's high-reasoning tokens for complex tasks.
-                </p>
+                <strong style="color: var(--accent-cyan); font-family: 'Orbitron', sans-serif; font-size: 0.85rem; letter-spacing: 1px; display: block; margin-bottom: 0.6rem;">
+                  🚀 ADVANCED ENTERPRISE PROMPT MASTERY & PRO-TIPS GUIDE
+                </strong>
+                <ul style="padding-left: 1.2rem; margin: 0; font-size: 0.78rem; color: var(--text-secondary); line-height: 1.5; display: flex; flex-direction: column; gap: 0.4rem;">
+                  <li>✦ <strong>Few-Shot Context Ingestion:</strong> Provide 2–3 explicit input-output pairs inside your prompt to align output formatting without fine-tuning models.</li>
+                  <li>✦ <strong>Negative Constraint Anchoring:</strong> Explicitly state what the model MUST NOT do (e.g. <em>"Do NOT include pleasantries, disclaimers, or code block backticks"</em>).</li>
+                  <li>✦ <strong>Chain-of-Thought (CoT) Reasoning:</strong> Instruct Gemini 3.5 to <em>"Think step-by-step through internal reasoning before generating the final answer"</em> to eliminate logical errors in complex multi-step tasks.</li>
+                  <li>✦ <strong>Delimiters & Structured Boundaries:</strong> Wrap user variables or raw inputs inside XML tags like <code>&lt;context&gt;</code> or <code>&lt;document&gt;</code> to prevent prompt injection attacks.</li>
+                </ul>
               </div>
-              <button id="learn-more-prompt-btn" type="button" class="btn btn-purple" style="font-size: 0.75rem; padding: 0.6rem 1.2rem; flex-shrink: 0; white-space: nowrap;">
-                📖 LEARN MORE ABOUT PROMPT ENGINEERING ➔
-              </button>
+              <div style="display: flex; justify-content: flex-end;">
+                <button id="learn-more-prompt-btn" type="button" class="btn btn-purple" style="font-size: 0.78rem; padding: 0.7rem 1.4rem; font-weight: bold;">
+                  📖 LEARN MORE ABOUT PROMPT ENGINEERING ➔
+                </button>
+              </div>
             </div>
           </div>
 
@@ -362,7 +369,7 @@
 
           <!-- Poster Footer -->
           <div style="text-align: center; border-top: 1px solid var(--glass-border); padding-top: 1.5rem; color: var(--text-muted); font-size: 0.7rem;">
-            <p>GE Adoption Neural Arena • Powered by Google Gemini 3.5 Flash</p>
+            <p>GE Adoption Neural Arena • Powered by roycheung@google.com</p>
           </div>
           <div class="poster-watermark">CERTIFICATE: OF-AI-PROMPT-MASTERY</div>
         </div>

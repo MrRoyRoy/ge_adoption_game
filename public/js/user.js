@@ -426,7 +426,11 @@ socket.on('submission-locked', ({ score, evaluation, userImageBase64 }) => {
 
 // 6. Admin Clicks End Game (Trigger Sweep Scanner Animation)
 socket.on('reveal-triggered', () => {
-  // Use user's generated image (or fallback) in scanning HUD
+  if (currentActiveGameMode === 'GAME2') {
+    // Skip image scanning HUD animation for Game 2 text prompt game
+    return;
+  }
+  // Use user's generated image (or fallback) in scanning HUD for Game 1
   if (scanningImageHolder) {
     scanningImageHolder.src = userFinalImage ? `data:image/jpeg;base64,${userFinalImage}` : NO_IMAGE_SVG;
     scanningImageHolder.onerror = () => { scanningImageHolder.src = NO_IMAGE_SVG; };
@@ -440,9 +444,10 @@ socket.on('player-reveal', ({ targetUsername, score, prompt, userImage, evaluati
     userFinalImage = userImage;
     userFinalEvaluation = evaluation;
     
+    const delay = (currentActiveGameMode === 'GAME2' || gameMode === 'GAME2') ? 100 : 2500;
     setTimeout(() => {
       populateAndShowPoster(score, prompt, userImage, evaluation, game2State, gameMode);
-    }, 2500);
+    }, delay);
   }
 });
 
