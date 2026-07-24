@@ -49,35 +49,56 @@ function getIapUserEmail(req) {
   return '';
 }
 
-// IAP Admin Protection Middleware
+// IAP & Passcode Admin Protection Middleware
 function requireGoogleDomainAdmin(req, res, next) {
   const userEmail = getIapUserEmail(req);
-  console.log(`[IAP Security] User requesting Admin access: ${userEmail}`);
+  console.log(`[IAP Security] User requesting Admin access: ${userEmail || 'No IAP header'}`);
   
-  if (userEmail.endsWith('@google.com')) {
+  // 1. If authenticated via GCP IAP with @google.com domain
+  if (userEmail && userEmail.endsWith('@google.com')) {
     req.userEmail = userEmail;
-    next();
-  } else {
-    res.status(403).send(`
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <title>403 Access Denied - GE Adoption Game</title>
-        <link rel="stylesheet" href="/css/style.css">
-      </head>
-      <body style="display:flex; align-items:center; justify-content:center; min-height:100vh; background:#04060c; color:#fff; font-family:'Inter',sans-serif; text-align:center;">
-        <div class="glass-panel" style="max-width:500px; padding:3rem; border:1px solid #ff3366;">
-          <h1 class="brand-font" style="color:#ff3366; font-size:1.8rem; margin-bottom:1rem;">⚡ 403 ACCESS DENIED</h1>
-          <p style="color:var(--text-secondary); line-height:1.6; margin-bottom:1.5rem;">
-            Admin command functions are strictly restricted to <strong>@google.com</strong> accounts via Identity-Aware Proxy (IAP).
-          </p>
-          <p style="font-size:0.85rem; color:#888;">Logged in as: <code>${userEmail || 'Unauthenticated'}</code></p>
-          <a href="/" class="btn btn-cyan" style="display:inline-block; margin-top:2rem;">Return to Player Portal</a>
-        </div>
-      </body>
-      </html>
-    `);
+    return next();
   }
+
+  // 2. If cookie or query contains valid admin passcode session
+  if (req.query && req.query.passcode === 'MrRoyRoy') {
+    req.userEmail = 'admin@google.com';
+    return next();
+  }
+
+  // 3. Otherwise render hybrid IAP login / Passcode fallback prompt
+  res.status(200).send(`
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <title>Admin Authorization - GE Adoption Game</title>
+      <link rel="stylesheet" href="/css/style.css">
+    </head>
+    <body style="display:flex; align-items:center; justify-content:center; min-height:100vh; background:#04060c; color:#fff; font-family:'Inter',sans-serif; text-align:center; padding:1rem;">
+      <div class="glass-panel" style="max-width:460px; width:100%; padding:2.5rem; border:1px solid var(--accent-cyan);">
+        <div style="width:60px; height:60px; border-radius:50%; background:rgba(0,240,255,0.1); border:1px solid var(--accent-cyan); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem;">
+          <span style="color:var(--accent-cyan); font-size:1.8rem;">🛡️</span>
+        </div>
+        <h2 class="brand-font" style="color:#fff; font-size:1.3rem; margin-bottom:0.5rem; letter-spacing:1px;">ADMINISTRATOR ACCESS</h2>
+        <p style="color:var(--text-secondary); font-size:0.85rem; line-height:1.5; margin-bottom:1.8rem;">
+          Access requires Google IAP authentication (<strong>@google.com</strong>) or Administrator Passcode verification.
+        </p>
+
+        <form method="GET" action="${req.path}" style="display:flex; flex-direction:column; gap:1rem;">
+          ${req.query.room ? `<input type="hidden" name="room" value="${escapeHTML(req.query.room)}">` : ''}
+          <div style="text-align:left;">
+            <label class="brand-font" style="font-size:0.75rem; color:var(--text-secondary); text-transform:uppercase;">Admin Passcode</label>
+            <input type="password" name="passcode" class="input-control" placeholder="••••••••" style="text-align:center; letter-spacing:4px; font-weight:bold; margin-top:0.4rem;" autofocus required>
+          </div>
+          <button type="submit" class="btn btn-cyan" style="width:100%; padding:0.8rem; margin-top:0.5rem;">Verify & Enter</button>
+        </form>
+
+        <a href="/" class="btn btn-outline" style="display:inline-block; width:100%; margin-top:1rem; padding:0.6rem; font-size:0.8rem; box-sizing:border-box;">Return to Home</a>
+      </div>
+    </body>
+    </html>
+  `);
 }
 
 // REST APIs
