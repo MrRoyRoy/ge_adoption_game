@@ -49,65 +49,34 @@ function getIapUserEmail(req) {
   return '';
 }
 
-// Simple Email & Domain Check Admin Middleware
+// Strict IAP Authentication Middleware
 function requireGoogleDomainAdmin(req, res, next) {
-  // Check email from session/query/header
-  let userEmail = (req.query && req.query.email) ? req.query.email.trim().toLowerCase() : '';
-
-  // Check IAP header if present
-  if (!userEmail) {
-    userEmail = getIapUserEmail(req);
-  }
-
-  console.log(`[Admin Security] Admin access attempt with email: "${userEmail}"`);
-
-  // If email ends with @google.com (or passcode is entered), grant access
+  const userEmail = getIapUserEmail(req);
+  console.log(`[IAP Security] User requesting Admin access: ${userEmail || 'No IAP header'}`);
+  
+  // Verify user is authenticated via Google IAP with @google.com domain
   if (userEmail && userEmail.endsWith('@google.com')) {
     req.userEmail = userEmail;
     return next();
   }
 
-  if (req.query && req.query.passcode === 'MrRoyRoy') {
-    req.userEmail = 'admin@google.com';
-    return next();
-  }
-
-  // Render simple clean Email Login Prompt
-  res.status(200).send(`
+  // Reject unauthenticated users or non-@google.com accounts
+  res.status(403).send(`
     <!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Admin Sign In - GE Adoption Game</title>
+      <title>403 Access Denied - GE Adoption Game</title>
       <link rel="stylesheet" href="/css/style.css">
     </head>
     <body style="display:flex; align-items:center; justify-content:center; min-height:100vh; background:#04060c; color:#fff; font-family:'Inter',sans-serif; text-align:center; padding:1rem;">
-      <div class="glass-panel" style="max-width:460px; width:100%; padding:2.5rem; border:1px solid var(--accent-cyan); box-shadow:0 0 25px rgba(0,240,255,0.15);">
-        <div style="width:65px; height:65px; border-radius:50%; background:rgba(0,240,255,0.1); border:1px solid var(--accent-cyan); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem;">
-          <span style="color:var(--accent-cyan); font-size:2rem;">🛡️</span>
-        </div>
-        <h2 class="brand-font" style="color:#fff; font-size:1.4rem; margin-bottom:0.5rem; letter-spacing:1px;">ADMINISTRATOR ACCESS</h2>
-        <p style="color:var(--text-secondary); font-size:0.85rem; line-height:1.5; margin-bottom:1.8rem;">
-          Enter your <strong>@google.com</strong> email address to unlock the Admin Panel and Analytics Portal.
+      <div class="glass-panel" style="max-width:500px; padding:3rem; border:1px solid #ff3366;">
+        <h1 class="brand-font" style="color:#ff3366; font-size:1.8rem; margin-bottom:1rem;">⚡ 403 ACCESS DENIED</h1>
+        <p style="color:var(--text-secondary); line-height:1.6; margin-bottom:1.5rem;">
+          Admin command functions are strictly restricted to verified <strong>@google.com</strong> accounts authenticated via Google Identity-Aware Proxy (IAP).
         </p>
-
-        ${userEmail && !userEmail.endsWith('@google.com') ? `
-          <div style="background:rgba(255,51,102,0.15); border:1px solid #ff3366; color:#ff3366; padding:0.75rem; border-radius:6px; font-size:0.8rem; margin-bottom:1.2rem;">
-            ⚠️ Access Denied: "<strong>${escapeHTML(userEmail)}</strong>" is not a <strong>@google.com</strong> address.
-          </div>
-        ` : ''}
-
-        <form method="GET" action="${req.path}" style="display:flex; flex-direction:column; gap:1.2rem;">
-          ${req.query.room ? `<input type="hidden" name="room" value="${escapeHTML(req.query.room)}">` : ''}
-          <div style="text-align:left;">
-            <label class="brand-font" style="font-size:0.75rem; color:var(--text-secondary); text-transform:uppercase;">Google Login Email</label>
-            <input type="email" name="email" class="input-control" placeholder="username@google.com" style="margin-top:0.4rem;" autofocus required>
-          </div>
-          <button type="submit" class="btn btn-cyan" style="width:100%; padding:0.85rem; font-weight:bold;">Sign In to Admin Panel</button>
-        </form>
-
-        <a href="/" class="btn btn-outline" style="display:inline-block; width:100%; margin-top:1.2rem; padding:0.6rem; font-size:0.8rem; box-sizing:border-box;">Return to Home</a>
+        <p style="font-size:0.85rem; color:#888;">Authenticated Email: <code>${userEmail || 'Unauthenticated / Invalid Domain'}</code></p>
+        <a href="/" class="btn btn-cyan" style="display:inline-block; margin-top:2rem;">Return to Player Portal</a>
       </div>
     </body>
     </html>
