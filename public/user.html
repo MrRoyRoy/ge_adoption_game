@@ -268,56 +268,86 @@
             </p>
           </div>
 
-          <!-- Game 1 Image Comparisons & Evaluation Breakdown -->
+          <!-- Game 1 Image Comparisons & Evaluation Breakdown (2-Column Grid matching IMAGE GENERATION TIPS layout) -->
           <div id="game1-poster-comparisons" style="margin-bottom: 1.5rem;">
-            <div class="grid-2" style="gap: 1rem; margin-bottom: 1rem;">
-              <div>
-                <p style="font-size: 0.75rem; font-family: 'Orbitron', sans-serif; text-transform: uppercase; margin-bottom: 0.4rem; text-align: center; color: var(--text-secondary);">Master Image</p>
-                <div class="image-card" style="aspect-ratio: 1/1; max-height: 200px; margin: 0 auto; border-radius: 8px;">
-                  <img src="" id="poster-master-img" style="width: 100%; height: 100%; object-fit: cover;">
+            <div class="grid-2" style="gap: 1rem; align-items: stretch;">
+              <!-- Left Column: Arena Comparison & Score Dial -->
+              <div style="background: rgba(8, 12, 22, 0.6); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                  <h3 class="brand-font" style="font-size: 0.85rem; color: var(--accent-cyan); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.4rem;">
+                    ✦ ARENA GENERATION COMPARISON
+                  </h3>
+                  <div class="grid-2" style="gap: 0.8rem; margin-bottom: 1rem;">
+                    <div>
+                      <p style="font-size: 0.7rem; font-family: 'Orbitron', sans-serif; text-transform: uppercase; margin-bottom: 0.3rem; text-align: center; color: var(--text-secondary);">Master Target</p>
+                      <div class="image-card" style="aspect-ratio: 1/1; max-height: 180px; margin: 0 auto; border-radius: 8px;">
+                        <img src="" id="poster-master-img" style="width: 100%; height: 100%; object-fit: cover;">
+                      </div>
+                    </div>
+                    <div>
+                      <p style="font-size: 0.7rem; font-family: 'Orbitron', sans-serif; text-transform: uppercase; margin-bottom: 0.3rem; text-align: center; color: var(--accent-cyan);">Your Generation</p>
+                      <div class="image-card" style="aspect-ratio: 1/1; max-height: 180px; margin: 0 auto; border-radius: 8px; border-color: var(--accent-cyan); position: relative; overflow: hidden;">
+                        <img src="" id="poster-user-img" style="width: 100%; height: 100%; object-fit: cover;">
+                        <div class="scanner-overlay" id="poster-scanner-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10;"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Score Circle & Commentary -->
+                <div style="background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 10px; padding: 0.8rem 1rem; display: flex; align-items: center; gap: 1rem;">
+                  <div class="score-circle" style="width: 75px; height: 75px; flex-shrink: 0; box-shadow: var(--glow-cyan); border-color: var(--accent-cyan);">
+                    <span class="score-circle-value" id="poster-score-value" style="font-size: 1.6rem;">99</span>
+                    <span class="score-circle-label" style="font-size: 0.45rem;">SCORE</span>
+                  </div>
+                  <div>
+                    <h4 class="brand-font" style="font-size: 0.75rem; color: var(--accent-purple); margin-bottom: 0.2rem;">AI Director Commentary</h4>
+                    <p id="poster-commentary" style="font-size: 0.78rem; line-height: 1.35; font-style: italic; color: var(--text-secondary); margin: 0;"></p>
+                  </div>
                 </div>
               </div>
-              <div>
-                <p style="font-size: 0.75rem; font-family: 'Orbitron', sans-serif; text-transform: uppercase; margin-bottom: 0.4rem; text-align: center; color: var(--accent-cyan);">Your Generation</p>
-                <div class="image-card" style="aspect-ratio: 1/1; max-height: 200px; margin: 0 auto; border-radius: 8px; border-color: var(--accent-cyan); position: relative; overflow: hidden;">
-                  <img src="" id="poster-user-img" style="width: 100%; height: 100%; object-fit: cover;">
-                  <div class="scanner-overlay" id="poster-scanner-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10;"></div>
+
+              <!-- Right Column: Rubric Breakdown & Customized Suggestions -->
+              <div style="background: rgba(8, 12, 22, 0.6); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1.2rem; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                  <h3 class="brand-font" style="font-size: 0.85rem; color: var(--accent-purple); margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.4rem;">
+                    💡 MULTIMODAL EVALUATION & SUGGESTIONS
+                  </h3>
+
+                  <!-- Rubric Breakdown Badges -->
+                  <div id="game1-rubric-breakdown" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem; margin-bottom: 0.8rem;">
+                    <div style="background: rgba(0,240,255,0.06); border: 1px solid rgba(0,240,255,0.2); border-radius: 6px; padding: 0.35rem 0.2rem; text-align: center;">
+                      <div style="font-size: 0.52rem; color: var(--text-secondary); font-family: 'Orbitron', sans-serif;">STYLE</div>
+                      <div id="rubric-style" style="font-size: 0.82rem; font-weight: bold; color: var(--accent-cyan); font-family: 'Orbitron', sans-serif;">--/25</div>
+                    </div>
+                    <div style="background: rgba(0,240,255,0.06); border: 1px solid rgba(0,240,255,0.2); border-radius: 6px; padding: 0.35rem 0.2rem; text-align: center;">
+                      <div style="font-size: 0.52rem; color: var(--text-secondary); font-family: 'Orbitron', sans-serif;">COMPOSITION</div>
+                      <div id="rubric-composition" style="font-size: 0.82rem; font-weight: bold; color: var(--accent-cyan); font-family: 'Orbitron', sans-serif;">--/25</div>
+                    </div>
+                    <div style="background: rgba(0,240,255,0.06); border: 1px solid rgba(0,240,255,0.2); border-radius: 6px; padding: 0.35rem 0.2rem; text-align: center;">
+                      <div style="font-size: 0.52rem; color: var(--text-secondary); font-family: 'Orbitron', sans-serif;">COLOR</div>
+                      <div id="rubric-color" style="font-size: 0.82rem; font-weight: bold; color: var(--accent-cyan); font-family: 'Orbitron', sans-serif;">--/25</div>
+                    </div>
+                    <div style="background: rgba(0,240,255,0.06); border: 1px solid rgba(0,240,255,0.2); border-radius: 6px; padding: 0.35rem 0.2rem; text-align: center;">
+                      <div style="font-size: 0.52rem; color: var(--text-secondary); font-family: 'Orbitron', sans-serif;">SUBJECT</div>
+                      <div id="rubric-subject" style="font-size: 0.82rem; font-weight: bold; color: var(--accent-cyan); font-family: 'Orbitron', sans-serif;">--/25</div>
+                    </div>
+                  </div>
+
+                  <!-- AI Suggestions -->
+                  <div id="game1-poster-suggestions-box" style="background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.8rem; margin-bottom: 0.8rem;">
+                    <ul id="poster-suggestions" class="suggestion-bullets" style="padding-left: 0; margin: 0; list-style: none;">
+                      <!-- Dynamically populated -->
+                    </ul>
+                  </div>
                 </div>
-              </div>
-            </div>
 
-            <!-- Rubric Breakdown Badges -->
-            <div id="game1-rubric-breakdown" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-bottom: 1rem;">
-              <div style="background: rgba(0,240,255,0.06); border: 1px solid rgba(0,240,255,0.2); border-radius: 6px; padding: 0.4rem; text-align: center;">
-                <div style="font-size: 0.58rem; color: var(--text-secondary); font-family: 'Orbitron', sans-serif;">STYLE & AESTHETIC</div>
-                <div id="rubric-style" style="font-size: 0.88rem; font-weight: bold; color: var(--accent-cyan); font-family: 'Orbitron', sans-serif;">--/25</div>
-              </div>
-              <div style="background: rgba(0,240,255,0.06); border: 1px solid rgba(0,240,255,0.2); border-radius: 6px; padding: 0.4rem; text-align: center;">
-                <div style="font-size: 0.58rem; color: var(--text-secondary); font-family: 'Orbitron', sans-serif;">COMPOSITION</div>
-                <div id="rubric-composition" style="font-size: 0.88rem; font-weight: bold; color: var(--accent-cyan); font-family: 'Orbitron', sans-serif;">--/25</div>
-              </div>
-              <div style="background: rgba(0,240,255,0.06); border: 1px solid rgba(0,240,255,0.2); border-radius: 6px; padding: 0.4rem; text-align: center;">
-                <div style="font-size: 0.58rem; color: var(--text-secondary); font-family: 'Orbitron', sans-serif;">COLOR & LIGHTING</div>
-                <div id="rubric-color" style="font-size: 0.88rem; font-weight: bold; color: var(--accent-cyan); font-family: 'Orbitron', sans-serif;">--/25</div>
-              </div>
-              <div style="background: rgba(0,240,255,0.06); border: 1px solid rgba(0,240,255,0.2); border-radius: 6px; padding: 0.4rem; text-align: center;">
-                <div style="font-size: 0.58rem; color: var(--text-secondary); font-family: 'Orbitron', sans-serif;">SUBJECT ACCURACY</div>
-                <div id="rubric-subject" style="font-size: 0.88rem; font-weight: bold; color: var(--accent-cyan); font-family: 'Orbitron', sans-serif;">--/25</div>
-              </div>
-            </div>
-
-            <!-- AI Suggestions & Pro Tips -->
-            <div id="game1-poster-suggestions-box" style="background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border); border-radius: 8px; padding: 0.8rem 1rem;">
-              <h4 class="brand-font" style="font-size: 0.75rem; color: var(--accent-purple); margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem;">
-                💡 GRADING SUGGESTIONS & PRO PROMPTING TIPS
-              </h4>
-              <ul id="poster-suggestions" class="suggestion-bullets" style="padding-left: 0; margin: 0; list-style: none;">
-                <!-- Dynamically populated -->
-              </ul>
-              <div style="display: flex; justify-content: flex-end; margin-top: 0.6rem;">
-                <button id="game1-best-practices-btn" type="button" class="btn btn-purple" style="font-size: 0.75rem; padding: 0.5rem 1.2rem; font-weight: bold;">
-                  📖 GEMINI IMAGE GENERATION BEST PRACTICES ➔
-                </button>
+                <!-- Extension Reading Button -->
+                <div style="display: flex; justify-content: flex-end; margin-top: 0.4rem;">
+                  <button id="game1-best-practices-btn" type="button" class="btn btn-purple" style="font-size: 0.75rem; padding: 0.5rem 1rem; font-weight: bold; width: 100%;">
+                    📖 GEMINI IMAGE GENERATION BEST PRACTICES ➔
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -390,16 +420,16 @@
             </div>
           </div>
 
-          <!-- Overall Score Core and commentary -->
-          <div class="commentary-box" style="background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem;">
+          <!-- Overall Score Core and commentary (For Game 2) -->
+          <div class="commentary-box" id="bottom-commentary-box" style="background: rgba(0,0,0,0.4); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; display: none;">
             <div style="display: flex; align-items: center; gap: 1.5rem;">
               <div class="score-circle" style="width: 100px; height: 100px; flex-shrink: 0; box-shadow: var(--glow-cyan); border-color: var(--accent-cyan);">
-                <span class="score-circle-value" id="poster-score-value" style="font-size: 2.2rem;">99</span>
+                <span class="score-circle-value" id="game2-poster-score-value" style="font-size: 2.2rem;">99</span>
                 <span class="score-circle-label" style="font-size: 0.5rem;">SCORE</span>
               </div>
               <div>
                 <h3 class="brand-font" style="font-size: 0.95rem; color: var(--accent-purple); margin-bottom: 0.3rem;">AI Director Commentary</h3>
-                <p id="poster-commentary" style="font-size: 0.85rem; line-height: 1.4; font-style: italic;"></p>
+                <p id="game2-poster-commentary" style="font-size: 0.85rem; line-height: 1.4; font-style: italic; color: var(--text-secondary); margin: 0;"></p>
               </div>
             </div>
           </div>

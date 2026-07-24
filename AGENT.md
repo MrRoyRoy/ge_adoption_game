@@ -61,12 +61,11 @@
 - [x] Implemented Game 2 Admin End Submission 3-Stage Track (Spell-Lock, Airship Fleet, Bowser Dungeon) over an animated ambient backdrop with real-time player chips.
 - [x] Generated paper cutout character artwork (`bowser-cutout.jpg`, `peach-cutout.jpg`, `mario-cutout.jpg`) via `gemini-3.5-flash-image-lite` for Bowser (1st), Peach (2nd), and Mario (3rd) with floating CSS micro-animations on the Game 2 reveal podium.
 - [x] Removed header submission lock button in User Portal and added manual `PROCEED TO NEXT STAGE ➔` action bar allowing users ample time to review AI responses before advancing.
-- [x] Restored Game 1 PROMPT ACHIEVEMENT poster layout with personalized grading suggestions, pro prompting tips, and a direct extension reading button for Google Cloud Gemini Image Generation Best Practices.
-- [x] Configured `@page { size: portrait; margin: 0; }` and zero-padding `@media print` overrides to eliminate browser header/footer URLs and margins during poster printing.
-- [x] Elaborated Game 2 poster cards with "Why Tested" rationale and "Expected Learning" outcomes for PTCF Protocol, Checklist Framing, and Adversarial Roleplay.
-- [x] Removed literal `✦` characters from pro-tips bullet points across user cockpits and style rules.
-- [x] Added dedicated `#user-return-lobby-btn` on player certificates and strengthened Admin `reset-to-lobby` socket listeners for seamless lobby navigation.
-- [x] Resolved Game 2 Keep Koopa Championship STAGE CLEARED bug by including `game2_state_json` in the `leaderboard` server payload and parsing completed task counts dynamically.
+- [x] Removed full-page image scanning animation transition on user portal after Admin ends submissions, navigating directly to the poster certificate.
+- [x] Unified "FAILED TO SUBMIT" SVG placeholder across user/admin views, gallery lightboxes, competitor cards, and podium cutouts.
+- [x] Replicated 2-column glassmorphic grid layout from IMAGE GENERATION TIPS into PROMPT ACHIEVEMENT poster, featuring Arena Comparison, Score Dial, Rubric Badges, Customized Suggestions, and Gemini Image Generation Best Practices popup button.
+- [x] Configured CSS `.suggestion-bullets li::before` to render `✦` as the clean bullet point marker without text string duplication.
+- [x] Verified and confirmed "Back to Lobby" modal confirm button cleanup and transition logic across Admin and User cockpits.
 
 ### Active/Next Tasks
 - [ ] Monitor live Cloud Run server telemetry during active multi-game workshops.

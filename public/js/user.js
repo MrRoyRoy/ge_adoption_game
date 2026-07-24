@@ -29,7 +29,7 @@ function showCustomNotification(message, type = 'info') {
   }, 3500);
 }
 
-const NO_IMAGE_SVG = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100%" height="100%" fill="%230a0f1d"/><text x="50%" y="45%" fill="%23ff3366" font-family="sans-serif" font-size="24" text-anchor="middle">⚡</text><text x="50%" y="70%" fill="%238a9bb0" font-family="sans-serif" font-size="9" text-anchor="middle">NO IMAGE</text></svg>';
+const NO_IMAGE_SVG = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="100%" height="100%" fill="%23080c14"/><g transform="translate(88,70)"><line x1="2" x2="22" y1="2" y2="22" stroke="%23ff3366" stroke-width="2"/><path d="M10.41 10.41a2 2 0 1 1-2.83-2.83" stroke="%23ff3366" stroke-width="2" fill="none"/><path d="M13.5 13.5 16 11l4.5 4.5" stroke="%23ff3366" stroke-width="2" fill="none"/><path d="M21 21H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2m4 0h10a2 2 0 0 1 2 2v12m-3.5-3.5L16 11" stroke="%23ff3366" stroke-width="2" fill="none"/></g><text x="50%" y="130" fill="%23ff3366" font-family="sans-serif" font-size="12" font-weight="bold" text-anchor="middle" letter-spacing="1">FAILED TO SUBMIT</text></svg>';
 
 // Custom Confirmation Dialog Overlay Utility
 function showCustomConfirm(title, message, onConfirm, confirmText = 'CONFIRM') {
@@ -44,15 +44,13 @@ function showCustomConfirm(title, message, onConfirm, confirmText = 'CONFIRM') {
     return;
   }
   
-  titleEl.textContent = title.toUpperCase();
-  msgEl.textContent = message;
+  if (titleEl) titleEl.textContent = title.toUpperCase();
+  if (msgEl) msgEl.textContent = message;
   if (okBtn) okBtn.textContent = confirmText.toUpperCase();
   modal.style.display = 'flex';
   
   const cleanUp = () => {
     modal.style.display = 'none';
-    if (okBtn) okBtn.onclick = null;
-    if (cancelBtn) cancelBtn.onclick = null;
   };
   
   if (okBtn) {
@@ -424,18 +422,9 @@ socket.on('submission-locked', ({ score, evaluation, userImageBase64 }) => {
   userFinalEvaluation = evaluation;
 });
 
-// 6. Admin Clicks End Game (Trigger Sweep Scanner Animation)
+// 6. Admin Clicks End Game (Direct to Poster)
 socket.on('reveal-triggered', () => {
-  if (currentActiveGameMode === 'GAME2') {
-    // Skip image scanning HUD animation for Game 2 text prompt game
-    return;
-  }
-  // Use user's generated image (or fallback) in scanning HUD for Game 1
-  if (scanningImageHolder) {
-    scanningImageHolder.src = userFinalImage ? `data:image/jpeg;base64,${userFinalImage}` : NO_IMAGE_SVG;
-    scanningImageHolder.onerror = () => { scanningImageHolder.src = NO_IMAGE_SVG; };
-  }
-  showSection('scanning');
+  // Direct transition to poster without intermediate scanning page
 });
 
 // 7. Individual Score Push Event
@@ -444,10 +433,10 @@ socket.on('player-reveal', ({ targetUsername, score, prompt, userImage, evaluati
     userFinalImage = userImage;
     userFinalEvaluation = evaluation;
     
-    const delay = (currentActiveGameMode === 'GAME2' || gameMode === 'GAME2') ? 100 : 2500;
+    // Immediate presentation of poster certificate
     setTimeout(() => {
       populateAndShowPoster(score, prompt, userImage, evaluation, game2State, gameMode);
-    }, delay);
+    }, 100);
   }
 });
 
@@ -459,24 +448,23 @@ function populateAndShowPoster(score, prompt, userImage, evaluation, game2State,
   const game1PosterComparisons = document.getElementById('game1-poster-comparisons');
   const game2PosterTechniques = document.getElementById('game2-poster-techniques');
 
+  const bottomCommentaryBox = document.getElementById('bottom-commentary-box');
+  const game2PosterScoreValue = document.getElementById('game2-poster-score-value');
+  const game2PosterCommentary = document.getElementById('game2-poster-commentary');
+
   if (currentActiveGameMode === 'GAME2' || gameMode === 'GAME2') {
     if (game1PosterComparisons) game1PosterComparisons.style.display = 'none';
     if (game2PosterTechniques) game2PosterTechniques.style.display = 'block';
+    if (bottomCommentaryBox) bottomCommentaryBox.style.display = 'block';
 
-    let clearedStagesCount = 0;
-    try {
-      if (game2State) {
-        const st = typeof game2State === 'string' ? JSON.parse(game2State) : game2State;
-        clearedStagesCount = st.completed ? 3 : (st.currentTask ? st.currentTask - 1 : 0);
-      }
-    } catch(e) {}
-
-    if (posterCommentary) {
-      posterCommentary.textContent = `Keep Koopa 3 Trials Infiltration Completed! Total Score: ${score || 0} PTS. You mastered key prompt engineering concepts including the PTCF framework, checklist formatting, and adversarial roleplay!`;
+    if (game2PosterScoreValue) game2PosterScoreValue.textContent = score || 0;
+    if (game2PosterCommentary) {
+      game2PosterCommentary.textContent = `Keep Koopa 3 Trials Infiltration Completed! Total Score: ${score || 0} PTS. You mastered key prompt engineering concepts including the PTCF framework, checklist formatting, and adversarial roleplay!`;
     }
   } else {
     if (game1PosterComparisons) game1PosterComparisons.style.display = 'block';
     if (game2PosterTechniques) game2PosterTechniques.style.display = 'none';
+    if (bottomCommentaryBox) bottomCommentaryBox.style.display = 'none';
 
     const activeMaster = masterImagesList.find(img => img.index === activeMasterIndex) || masterImagesList[0];
     if (posterMasterImg) {

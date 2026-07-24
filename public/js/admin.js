@@ -29,7 +29,7 @@ function showCustomNotification(message, type = 'info') {
   }, 3500);
 }
 
-const NO_IMAGE_SVG = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100%" height="100%" fill="%230a0f1d"/><text x="50%" y="45%" fill="%23ff3366" font-family="sans-serif" font-size="24" text-anchor="middle">⚡</text><text x="50%" y="70%" fill="%238a9bb0" font-family="sans-serif" font-size="9" text-anchor="middle">NO IMAGE</text></svg>';
+const NO_IMAGE_SVG = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200"><rect width="100%" height="100%" fill="%23080c14"/><g transform="translate(88,70)"><line x1="2" x2="22" y1="2" y2="22" stroke="%23ff3366" stroke-width="2"/><path d="M10.41 10.41a2 2 0 1 1-2.83-2.83" stroke="%23ff3366" stroke-width="2" fill="none"/><path d="M13.5 13.5 16 11l4.5 4.5" stroke="%23ff3366" stroke-width="2" fill="none"/><path d="M21 21H3a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2m4 0h10a2 2 0 0 1 2 2v12m-3.5-3.5L16 11" stroke="%23ff3366" stroke-width="2" fill="none"/></g><text x="50%" y="130" fill="%23ff3366" font-family="sans-serif" font-size="12" font-weight="bold" text-anchor="middle" letter-spacing="1">FAILED TO SUBMIT</text></svg>';
 
 // Custom Confirmation Dialog Overlay Utility (Admin Portal)
 function showCustomConfirm(title, message, onConfirm, confirmText = 'CONFIRM') {
@@ -44,15 +44,13 @@ function showCustomConfirm(title, message, onConfirm, confirmText = 'CONFIRM') {
     return;
   }
   
-  titleEl.textContent = title.toUpperCase();
-  msgEl.textContent = message;
+  if (titleEl) titleEl.textContent = title.toUpperCase();
+  if (msgEl) msgEl.textContent = message;
   if (okBtn) okBtn.textContent = confirmText.toUpperCase();
   modal.style.display = 'flex';
   
   const cleanUp = () => {
     modal.style.display = 'none';
-    if (okBtn) okBtn.onclick = null;
-    if (cancelBtn) cancelBtn.onclick = null;
   };
   
   if (okBtn) {
