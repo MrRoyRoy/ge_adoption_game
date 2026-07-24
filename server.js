@@ -509,7 +509,8 @@ io.on('connection', (socket) => {
                 userImage: player.user_image_base64,
                 evaluation: player.evaluation_json ? JSON.parse(player.evaluation_json) : null,
                 game2State: player.game2_state_json ? JSON.parse(player.game2_state_json) : null,
-                gameMode: activeGameMode
+                gameMode: activeGameMode,
+                activeMasterIndex: room.active_master_index
               };
               io.to(roomId).emit('player-reveal', revealData);
               io.to(roomId).emit(`player-reveal-${player.username}`, revealData);

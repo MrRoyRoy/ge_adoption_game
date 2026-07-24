@@ -428,10 +428,13 @@ socket.on('reveal-triggered', () => {
 });
 
 // 7. Individual Score Push Event
-socket.on('player-reveal', ({ targetUsername, score, prompt, userImage, evaluation, game2State, gameMode }) => {
+socket.on('player-reveal', ({ targetUsername, score, prompt, userImage, evaluation, game2State, gameMode, activeMasterIndex: serverMasterIndex }) => {
   if (!targetUsername || targetUsername.toLowerCase() === (username || '').toLowerCase()) {
     userFinalImage = userImage;
     userFinalEvaluation = evaluation;
+    if (serverMasterIndex !== undefined && serverMasterIndex !== null) {
+      activeMasterIndex = serverMasterIndex;
+    }
     
     // Immediate presentation of poster certificate
     setTimeout(() => {

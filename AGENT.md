@@ -61,11 +61,9 @@
 - [x] Implemented Game 2 Admin End Submission 3-Stage Track (Spell-Lock, Airship Fleet, Bowser Dungeon) over an animated ambient backdrop with real-time player chips.
 - [x] Generated paper cutout character artwork (`bowser-cutout.jpg`, `peach-cutout.jpg`, `mario-cutout.jpg`) via `gemini-3.5-flash-image-lite` for Bowser (1st), Peach (2nd), and Mario (3rd) with floating CSS micro-animations on the Game 2 reveal podium.
 - [x] Removed header submission lock button in User Portal and added manual `PROCEED TO NEXT STAGE ➔` action bar allowing users ample time to review AI responses before advancing.
-- [x] Removed full-page image scanning animation transition on user portal after Admin ends submissions, navigating directly to the poster certificate.
-- [x] Unified "FAILED TO SUBMIT" SVG placeholder across user/admin views, gallery lightboxes, competitor cards, and podium cutouts.
-- [x] Replicated 2-column glassmorphic grid layout from IMAGE GENERATION TIPS into PROMPT ACHIEVEMENT poster, featuring Arena Comparison, Score Dial, Rubric Badges, Customized Suggestions, and Gemini Image Generation Best Practices popup button.
-- [x] Configured CSS `.suggestion-bullets li::before` to render `✦` as the clean bullet point marker without text string duplication.
-- [x] Verified and confirmed "Back to Lobby" modal confirm button cleanup and transition logic across Admin and User cockpits.
+- [x] Passed `activeMasterIndex` from server room state inside `player-reveal` socket event, ensuring user poster always displays the exact round master image rather than defaulting to index 0 ("Spirited Anime Shrine").
+- [x] Optimized `@media print` rules with `size: portrait; height: 100vh; page-break-inside: avoid;` and scaled print image heights to guarantee poster certificate prints strictly on 1 single page.
+- [x] Removed literal `✦` character in front of `<li>` sentences in `user.html` and `admin.html` IMAGE GENERATION TIPS, leaving styling cleanly handled by CSS pseudo-elements.
 
 ### Active/Next Tasks
 - [ ] Monitor live Cloud Run server telemetry during active multi-game workshops.
