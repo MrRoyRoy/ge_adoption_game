@@ -61,11 +61,12 @@
 - [x] Implemented Game 2 Admin End Submission 3-Stage Track (Spell-Lock, Airship Fleet, Bowser Dungeon) over an animated ambient backdrop with real-time player chips.
 - [x] Generated paper cutout character artwork (`bowser-cutout.jpg`, `peach-cutout.jpg`, `mario-cutout.jpg`) via `gemini-3.5-flash-image-lite` for Bowser (1st), Peach (2nd), and Mario (3rd) with floating CSS micro-animations on the Game 2 reveal podium.
 - [x] Removed header submission lock button in User Portal and added manual `PROCEED TO NEXT STAGE ➔` action bar allowing users ample time to review AI responses before advancing.
-- [x] Standardized Master Image indexing across server, admin catalog selection, user poster, and gallery views, fixing master image discrepancies.
-- [x] Restored Game 1 Rubric Breakdown, AI Grading Suggestions, and Pro Tips on the Prompt Achievement poster, styled neatly within a single-page print format.
-- [x] Styled Game 2 Pro Tips with clear cyan bullet point indicators (`✦ Few-Shot Context Ingestion...`).
-- [x] Resolved "Return to Lobby" / "Back to Game Selection" modal freeze issue by removing duplicate listeners and auto-hiding modal overlays on lobby transition.
-- [x] Increased height and spacing for the Champion Stage podium (`.podium-container`), eliminating third place overlap with buttons and leaderboard tables below.
+- [x] Restored Game 1 PROMPT ACHIEVEMENT poster layout with personalized grading suggestions, pro prompting tips, and a direct extension reading button for Google Cloud Gemini Image Generation Best Practices.
+- [x] Configured `@page { size: portrait; margin: 0; }` and zero-padding `@media print` overrides to eliminate browser header/footer URLs and margins during poster printing.
+- [x] Elaborated Game 2 poster cards with "Why Tested" rationale and "Expected Learning" outcomes for PTCF Protocol, Checklist Framing, and Adversarial Roleplay.
+- [x] Removed literal `✦` characters from pro-tips bullet points across user cockpits and style rules.
+- [x] Added dedicated `#user-return-lobby-btn` on player certificates and strengthened Admin `reset-to-lobby` socket listeners for seamless lobby navigation.
+- [x] Resolved Game 2 Keep Koopa Championship STAGE CLEARED bug by including `game2_state_json` in the `leaderboard` server payload and parsing completed task counts dynamically.
 
 ### Active/Next Tasks
 - [ ] Monitor live Cloud Run server telemetry during active multi-game workshops.

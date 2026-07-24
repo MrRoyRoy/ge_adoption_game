@@ -497,24 +497,38 @@ function populateAndShowPoster(score, prompt, userImage, evaluation, game2State,
       if (posterSuggestions && evaluation.suggestions) {
         posterSuggestions.innerHTML = evaluation.suggestions.map(s => `<li>${highlightSuggestions(s)}</li>`).join('');
       } else if (posterSuggestions) {
-        posterSuggestions.innerHTML = `<li>✦ Enhance visual descriptions with lighting, angle, and medium keywords for higher fidelity.</li>`;
+        posterSuggestions.innerHTML = `<li>Enhance visual descriptions with lighting, angle, and medium keywords for higher fidelity.</li>`;
       }
     } else if (posterSuggestions) {
       if (rubricStyle) rubricStyle.textContent = `--/25`;
       if (rubricComposition) rubricComposition.textContent = `--/25`;
       if (rubricColor) rubricColor.textContent = `--/25`;
       if (rubricSubject) rubricSubject.textContent = `--/25`;
-      posterSuggestions.innerHTML = `<li>✦ Specify style tokens like cinematic, ray-traced, 8k render, or watercolor to guide Gemini 3.5.</li>`;
+      posterSuggestions.innerHTML = `<li>Specify style tokens like cinematic, ray-traced, 8k render, or watercolor to guide Gemini 3.5.</li>`;
     }
   }
 
   showSection('poster');
 
-  // Wire Learn More button
+  // Wire Extension Reading & Learn More buttons
+  const game1BestPracticesBtn = document.getElementById('game1-best-practices-btn');
+  if (game1BestPracticesBtn) {
+    game1BestPracticesBtn.onclick = () => {
+      window.open('https://docs.cloud.google.com/gemini-enterprise-agent-platform/models/capabilities/gemini-image-generation-best-practices', '_blank', 'noopener,noreferrer');
+    };
+  }
+
   const learnMorePromptBtn = document.getElementById('learn-more-prompt-btn');
   if (learnMorePromptBtn) {
     learnMorePromptBtn.onclick = () => {
       window.open('https://cloud.google.com/discover/what-is-prompt-engineering#what-is-a-prompt-for-ai', '_blank', 'noopener,noreferrer');
+    };
+  }
+
+  const userReturnLobbyBtn = document.getElementById('user-return-lobby-btn');
+  if (userReturnLobbyBtn) {
+    userReturnLobbyBtn.onclick = () => {
+      showSection('lobby');
     };
   }
 

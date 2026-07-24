@@ -485,14 +485,15 @@ io.on('connection', (socket) => {
               db.run('UPDATE players SET accumulated_score = ? WHERE room_id = ? AND username = ?', [newAccumulated, roomId, p.username]);
             });
 
-            // Top 5 Leaderboard
-            const leaderboard = players.slice(0, 5).map(p => ({
+            // Top 10 Leaderboard
+            const leaderboard = players.slice(0, 10).map(p => ({
               username: p.username,
               score: p.score || 0,
               prompt: p.submitted_prompt,
               image: p.user_image_base64,
               rankTitle: getRankTitle(p.score || 0),
-              hasSubmitted: p.has_submitted
+              hasSubmitted: p.has_submitted,
+              game2_state_json: p.game2_state_json
             }));
 
             // Notify Admin of scoreboard
