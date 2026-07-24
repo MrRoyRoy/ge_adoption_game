@@ -49,52 +49,65 @@ function getIapUserEmail(req) {
   return '';
 }
 
-// IAP & Passcode Admin Protection Middleware
+// Simple Email & Domain Check Admin Middleware
 function requireGoogleDomainAdmin(req, res, next) {
-  const userEmail = getIapUserEmail(req);
-  console.log(`[IAP Security] User requesting Admin access: ${userEmail || 'No IAP header'}`);
-  
-  // 1. If authenticated via GCP IAP with @google.com domain
+  // Check email from session/query/header
+  let userEmail = (req.query && req.query.email) ? req.query.email.trim().toLowerCase() : '';
+
+  // Check IAP header if present
+  if (!userEmail) {
+    userEmail = getIapUserEmail(req);
+  }
+
+  console.log(`[Admin Security] Admin access attempt with email: "${userEmail}"`);
+
+  // If email ends with @google.com (or passcode is entered), grant access
   if (userEmail && userEmail.endsWith('@google.com')) {
     req.userEmail = userEmail;
     return next();
   }
 
-  // 2. If cookie or query contains valid admin passcode session
   if (req.query && req.query.passcode === 'MrRoyRoy') {
     req.userEmail = 'admin@google.com';
     return next();
   }
 
-  // 3. Otherwise render hybrid IAP login / Passcode fallback prompt
+  // Render simple clean Email Login Prompt
   res.status(200).send(`
     <!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="UTF-8">
-      <title>Admin Authorization - GE Adoption Game</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Admin Sign In - GE Adoption Game</title>
       <link rel="stylesheet" href="/css/style.css">
     </head>
     <body style="display:flex; align-items:center; justify-content:center; min-height:100vh; background:#04060c; color:#fff; font-family:'Inter',sans-serif; text-align:center; padding:1rem;">
-      <div class="glass-panel" style="max-width:460px; width:100%; padding:2.5rem; border:1px solid var(--accent-cyan);">
-        <div style="width:60px; height:60px; border-radius:50%; background:rgba(0,240,255,0.1); border:1px solid var(--accent-cyan); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem;">
-          <span style="color:var(--accent-cyan); font-size:1.8rem;">🛡️</span>
+      <div class="glass-panel" style="max-width:460px; width:100%; padding:2.5rem; border:1px solid var(--accent-cyan); box-shadow:0 0 25px rgba(0,240,255,0.15);">
+        <div style="width:65px; height:65px; border-radius:50%; background:rgba(0,240,255,0.1); border:1px solid var(--accent-cyan); display:flex; align-items:center; justify-content:center; margin:0 auto 1.2rem;">
+          <span style="color:var(--accent-cyan); font-size:2rem;">🛡️</span>
         </div>
-        <h2 class="brand-font" style="color:#fff; font-size:1.3rem; margin-bottom:0.5rem; letter-spacing:1px;">ADMINISTRATOR ACCESS</h2>
+        <h2 class="brand-font" style="color:#fff; font-size:1.4rem; margin-bottom:0.5rem; letter-spacing:1px;">ADMINISTRATOR ACCESS</h2>
         <p style="color:var(--text-secondary); font-size:0.85rem; line-height:1.5; margin-bottom:1.8rem;">
-          Access requires Google IAP authentication (<strong>@google.com</strong>) or Administrator Passcode verification.
+          Enter your <strong>@google.com</strong> email address to unlock the Admin Panel and Analytics Portal.
         </p>
 
-        <form method="GET" action="${req.path}" style="display:flex; flex-direction:column; gap:1rem;">
+        ${userEmail && !userEmail.endsWith('@google.com') ? `
+          <div style="background:rgba(255,51,102,0.15); border:1px solid #ff3366; color:#ff3366; padding:0.75rem; border-radius:6px; font-size:0.8rem; margin-bottom:1.2rem;">
+            ⚠️ Access Denied: "<strong>${escapeHTML(userEmail)}</strong>" is not a <strong>@google.com</strong> address.
+          </div>
+        ` : ''}
+
+        <form method="GET" action="${req.path}" style="display:flex; flex-direction:column; gap:1.2rem;">
           ${req.query.room ? `<input type="hidden" name="room" value="${escapeHTML(req.query.room)}">` : ''}
           <div style="text-align:left;">
-            <label class="brand-font" style="font-size:0.75rem; color:var(--text-secondary); text-transform:uppercase;">Admin Passcode</label>
-            <input type="password" name="passcode" class="input-control" placeholder="••••••••" style="text-align:center; letter-spacing:4px; font-weight:bold; margin-top:0.4rem;" autofocus required>
+            <label class="brand-font" style="font-size:0.75rem; color:var(--text-secondary); text-transform:uppercase;">Google Login Email</label>
+            <input type="email" name="email" class="input-control" placeholder="username@google.com" style="margin-top:0.4rem;" autofocus required>
           </div>
-          <button type="submit" class="btn btn-cyan" style="width:100%; padding:0.8rem; margin-top:0.5rem;">Verify & Enter</button>
+          <button type="submit" class="btn btn-cyan" style="width:100%; padding:0.85rem; font-weight:bold;">Sign In to Admin Panel</button>
         </form>
 
-        <a href="/" class="btn btn-outline" style="display:inline-block; width:100%; margin-top:1rem; padding:0.6rem; font-size:0.8rem; box-sizing:border-box;">Return to Home</a>
+        <a href="/" class="btn btn-outline" style="display:inline-block; width:100%; margin-top:1.2rem; padding:0.6rem; font-size:0.8rem; box-sizing:border-box;">Return to Home</a>
       </div>
     </body>
     </html>
