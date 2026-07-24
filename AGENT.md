@@ -61,6 +61,11 @@
 - [x] Implemented Game 2 Admin End Submission 3-Stage Track (Spell-Lock, Airship Fleet, Bowser Dungeon) over an animated ambient backdrop with real-time player chips.
 - [x] Generated paper cutout character artwork (`bowser-cutout.jpg`, `peach-cutout.jpg`, `mario-cutout.jpg`) via `gemini-3.5-flash-image-lite` for Bowser (1st), Peach (2nd), and Mario (3rd) with floating CSS micro-animations on the Game 2 reveal podium.
 - [x] Removed header submission lock button in User Portal and added manual `PROCEED TO NEXT STAGE ➔` action bar allowing users ample time to review AI responses before advancing.
+- [x] Implemented seamless page refresh progress restoration in `user.js`:
+  - Removed spectator kick/redirect when rejoining during `REVEAL` or `GALLERY` states.
+  - Restored Game 1 evaluation poster certificate and prompt submissions directly from DB on refresh (`join-success`).
+  - Restored Game 2 active trial state, total score, and full historical conversation transcript (`taskState.chat`) from DB on refresh.
+  - Added auto-saving draft prompt buffer to `sessionStorage` in Game 1 so unsaved input text survives accidental page reloads.
 - [x] Updated footer text on landing page (`index.html`) to `"GE Adoption Game • Powered by roycheung@google.com"`.
 - [x] Added explicit text descriptors (`[IMAGE 1: MASTER TARGET BENCHMARK ARTWORK]` vs `[IMAGE 2: USER GENERATED ARTWORK]`) and strict role boundary rules in `vertex-client.js` `evaluateImages`, preventing Gemini Flash from confusing the master reference and user generation when crafting AI Director Commentary and suggestions.
 - [x] Completely removed Return to Lobby button from User Portal for Game 1 poster certificate, while enabling it for Game 2 with custom confirmation modal and socket re-join synchronization (`socket.emit('player-join')`).

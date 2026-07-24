@@ -164,30 +164,101 @@ socket.on('join-success', ({ roomStatus, gameMode, activeMasterIndex: currentMas
   
   if (roomStatus === 'LOBBY') {
     showSection('lobby');
-  } else if (roomStatus === 'PLAYING') {
-    if (playerState && playerState.has_submitted === 1) {
-      lockedPromptDisplay.textContent = playerState.submitted_prompt || 'Task Completed!';
-      showSection('submitted');
-    } else {
-      if (currentActiveGameMode === 'GAME2') {
-        showSection('playing-game2');
-        if (playerState && playerState.game2_state_json) {
-          try {
-            const gameState = JSON.parse(playerState.game2_state_json);
-            updateGame2UI(gameState, game2Tasks[gameState.currentTask] || game2Tasks[1]);
-          } catch (e) {}
+    return;
+  }
+
+  // Restore progress if player record exists in DB
+  if (playerState) {
+    let restoredSection = false;
+
+    // Game 1: Restore completed evaluation poster
+    if (currentActiveGameMode === 'GAME1' && playerState.evaluation_json) {
+      try {
+        const evalData = JSON.parse(playerState.evaluation_json);
+        populateAndShowPoster(
+          playerState.score || evalData.score || 0,
+          playerState.submitted_prompt || '',
+          playerState.user_image_base64 || '',
+          evalData,
+          null,
+          'GAME1'
+        );
+        restoredSection = true;
+      } catch (e) {
+        console.error('Error restoring Game 1 poster on refresh:', e);
+      }
+    } else if (currentActiveGameMode === 'GAME2' && playerState.game2_state_json) {
+      try {
+        const gameState = JSON.parse(playerState.game2_state_json);
+        if (gameState.completed || playerState.has_submitted === 1) {
+          populateAndShowPoster(
+            gameState.totalScore || playerState.score || 0,
+            null,
+            null,
+            null,
+            gameState,
+            'GAME2'
+          );
+          restoredSection = true;
         }
-      } else {
-        showSection('playing');
+      } catch (e) {
+        console.error('Error restoring Game 2 poster on refresh:', e);
       }
     }
-  } else if (roomStatus === 'REVEAL') {
-    showCustomNotification('Game is already in progress or revealing scores. Rejoining as spectator.', 'error');
-    setTimeout(() => {
-      window.location.href = '/';
-    }, 3000);
-  } else if (roomStatus === 'GALLERY') {
-    showSection('gallery');
+
+    if (restoredSection) return;
+
+    if (roomStatus === 'PLAYING') {
+      if (playerState.has_submitted === 1) {
+        lockedPromptDisplay.textContent = playerState.submitted_prompt || 'Task Completed! Waiting for reveal...';
+        showSection('submitted');
+      } else {
+        if (currentActiveGameMode === 'GAME2') {
+          showSection('playing-game2');
+          if (playerState.game2_state_json) {
+            try {
+              const gameState = JSON.parse(playerState.game2_state_json);
+              updateGame2UI(gameState, game2Tasks[gameState.currentTask] || game2Tasks[1]);
+            } catch (e) {}
+          }
+        } else {
+          showSection('playing');
+          const savedDraft = sessionStorage.getItem(`draft_prompt_${roomId}_${username}`);
+          if (savedDraft && userPrompt && !userPrompt.value) {
+            userPrompt.value = savedDraft;
+          }
+        }
+      }
+      return;
+    }
+
+    if (roomStatus === 'REVEAL' || roomStatus === 'GALLERY') {
+      if (playerState.has_submitted === 1) {
+        lockedPromptDisplay.textContent = playerState.submitted_prompt || 'Task Completed! Waiting for podium reveal...';
+        showSection('submitted');
+      } else if (roomStatus === 'GALLERY') {
+        showSection('gallery');
+      } else {
+        showSection('lobby');
+      }
+      return;
+    }
+  }
+
+  // Fallback for new joiners or missing playerState
+  if (roomStatus === 'PLAYING') {
+    if (currentActiveGameMode === 'GAME2') {
+      showSection('playing-game2');
+      if (game2Tasks && game2Tasks[1]) {
+        updateGame2UI({ currentTask: 1, totalScore: 0, tasks: { "1": { turns: 0 } } }, game2Tasks[1]);
+      }
+    } else {
+      showSection('playing');
+    }
+  } else if (roomStatus === 'REVEAL' || roomStatus === 'GALLERY') {
+    showSection('submitted');
+  } else {
+    showSection('lobby');
   }
 });
 
@@ -339,8 +410,9 @@ function updateGame2UI(gameState, taskConfig, rankTitle, isAdvancingStage) {
     game2BgLayer.style.backgroundImage = `url(${taskConfig.bgImage})`;
   }
 
-  // Auto-insert Koopa bot opening message if chat is empty for this task
-  if (game2ChatHistory && (game2ChatHistory.children.length === 0 || !taskState.turns || taskState.turns === 0)) {
+  // Auto-insert Koopa bot opening message & restore historical chat messages on refresh
+  if (game2ChatHistory) {
+    game2ChatHistory.innerHTML = ''; // reset chat container
     const initialGreetings = {
       1: "HALT INTRUDER! I am Kamek's Spell-Lock Guard. You shall not pass unless your command satisfies the strict PTCF (Person, Task, Context, Format) Master Protocol. State your business!",
       2: "ATTENTION ON DECK! I am Bowser's Airship Commander. The fleet is on high alert. State your inquiry, but beware: our defense grid enforces strict structural compliance!",
@@ -349,6 +421,13 @@ function updateGame2UI(gameState, taskConfig, rankTitle, isAdvancingStage) {
     const greetingText = initialGreetings[currentTaskId] || "Halt! State your prompt command!";
     game2ChatHistory.innerHTML = `<div style="background: rgba(0, 240, 255, 0.1); border: 1px solid var(--accent-cyan); padding: 0.6rem 0.8rem; border-radius: 8px; color: var(--accent-cyan); font-size: 0.78rem; font-family: 'Orbitron', sans-serif; margin-bottom: 0.5rem;">✦ [SYSTEM INITIALIZED] Trial #${currentTaskId} Active — KOOPA AI BOT ONLINE</div>`;
     appendChatMessage('MODEL', greetingText);
+
+    // Re-render historical chat messages from DB state
+    if (taskState.chat && Array.isArray(taskState.chat) && taskState.chat.length > 0) {
+      taskState.chat.forEach(msg => {
+        appendChatMessage(msg.sender, msg.text);
+      });
+    }
   }
 
   // Automated Hint Banner (Appears if turns >= 3 and task not completed)
@@ -397,6 +476,14 @@ function appendChatMessage(sender, text) {
   game2ChatHistory.scrollTop = game2ChatHistory.scrollHeight;
 }
 
+if (userPrompt) {
+  userPrompt.addEventListener('input', () => {
+    if (roomId && username) {
+      sessionStorage.setItem(`draft_prompt_${roomId}_${username}`, userPrompt.value);
+    }
+  });
+}
+
 // 4. Submit & Lock Final Prompt
 submitPromptBtn.addEventListener('click', () => {
   const prompt = userPrompt.value.trim();
@@ -409,6 +496,10 @@ submitPromptBtn.addEventListener('click', () => {
     lockedPromptDisplay.textContent = prompt;
     userPrompt.disabled = true;
     submitPromptBtn.disabled = true;
+
+    if (roomId && username) {
+      sessionStorage.removeItem(`draft_prompt_${roomId}_${username}`);
+    }
 
     // Send payload to background evaluator
     socket.emit('submit-prompt', { roomId, username, prompt });
