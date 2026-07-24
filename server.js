@@ -469,8 +469,9 @@ io.on('connection', (socket) => {
   socket.on('end-game', (roomId) => {
     console.log(`Admin clicked End Game in room [${roomId}]`);
 
-    db.get('SELECT game_mode FROM rooms WHERE id = ?', [roomId], (roomErr, room) => {
+    db.get('SELECT game_mode, active_master_index FROM rooms WHERE id = ?', [roomId], (roomErr, room) => {
       const activeGameMode = room ? room.game_mode : 'GAME1';
+      const masterIdx = room ? room.active_master_index : 0;
 
       db.run('UPDATE rooms SET status = ? WHERE id = ?', ['REVEAL', roomId], () => {
         db.all(
@@ -498,6 +499,7 @@ io.on('connection', (socket) => {
 
             // Notify Admin of scoreboard
             io.to(`admin-${roomId}`).emit('game-revealed', { leaderboard, gameMode: activeGameMode });
+            sendRoomStateToAdmin(roomId);
 
             // Notify individual players
             players.forEach((player) => {
@@ -510,14 +512,13 @@ io.on('connection', (socket) => {
                 evaluation: player.evaluation_json ? JSON.parse(player.evaluation_json) : null,
                 game2State: player.game2_state_json ? JSON.parse(player.game2_state_json) : null,
                 gameMode: activeGameMode,
-                activeMasterIndex: room.active_master_index
+                activeMasterIndex: masterIdx
               };
               io.to(roomId).emit('player-reveal', revealData);
               io.to(roomId).emit(`player-reveal-${player.username}`, revealData);
             });
 
             io.to(roomId).emit('reveal-triggered', { gameMode: activeGameMode });
-            sendRoomStateToAdmin(roomId);
           }
         );
       });

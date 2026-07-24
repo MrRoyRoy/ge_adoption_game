@@ -64,6 +64,9 @@
 - [x] Passed `activeMasterIndex` from server room state inside `player-reveal` socket event, ensuring user poster always displays the exact round master image rather than defaulting to index 0 ("Spirited Anime Shrine").
 - [x] Optimized `@media print` rules with `size: portrait; height: 100vh; page-break-inside: avoid;` and scaled print image heights to guarantee poster certificate prints strictly on 1 single page.
 - [x] Removed literal `✦` character in front of `<li>` sentences in `user.html` and `admin.html` IMAGE GENERATION TIPS, leaving styling cleanly handled by CSS pseudo-elements.
+- [x] Fixed real-time Game 2 score synchronization on Admin Hacking Track chips by reading `st.totalScore` dynamically from `game2_state_json`.
+- [x] Fixed `end-game` event processing for Game 2 to ensure "End Submissions & Show Scoreboard" transitions Admin directly to the Championship Podium.
+- [x] Added `white-space: nowrap; flex-shrink: 0;` to enforce single-line layout for the `FINISHED: 0 / X` badge in the Admin Game 2 view.
 
 ### Active/Next Tasks
 - [ ] Monitor live Cloud Run server telemetry during active multi-game workshops.

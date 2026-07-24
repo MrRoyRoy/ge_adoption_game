@@ -430,10 +430,14 @@ function renderPlayingRoster(players) {
       players.forEach(p => {
         let currentTask = 1;
         let isDone = p.has_submitted === 1;
+        let displayScore = p.score || 0;
         try {
           if (p.game2_state_json) {
-            const st = JSON.parse(p.game2_state_json);
+            const st = typeof p.game2_state_json === 'string' ? JSON.parse(p.game2_state_json) : p.game2_state_json;
             currentTask = st.currentTask || 1;
+            if (st.totalScore !== undefined) {
+              displayScore = Math.max(displayScore, st.totalScore);
+            }
           }
         } catch (e) {}
 
@@ -444,7 +448,7 @@ function renderPlayingRoster(players) {
             <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background-color:${isDone ? '#00ff88' : 'var(--accent-cyan)'}; flex-shrink:0;"></span>
             <span style="color: #fff; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHTML(p.username)}</span>
           </div>
-          <span style="font-family: 'Orbitron', sans-serif; font-size: 0.75rem; color: var(--accent-cyan); font-weight: bold; flex-shrink: 0; margin-left: 0.5rem;">${p.score || 0} PTS</span>
+          <span style="font-family: 'Orbitron', sans-serif; font-size: 0.75rem; color: var(--accent-cyan); font-weight: bold; flex-shrink: 0; margin-left: 0.5rem;">${displayScore} PTS</span>
         `;
 
         if (currentTask === 1 && !isDone) {
