@@ -61,6 +61,7 @@
 - [x] Implemented Game 2 Admin End Submission 3-Stage Track (Spell-Lock, Airship Fleet, Bowser Dungeon) over an animated ambient backdrop with real-time player chips.
 - [x] Generated paper cutout character artwork (`bowser-cutout.jpg`, `peach-cutout.jpg`, `mario-cutout.jpg`) via `gemini-3.5-flash-image-lite` for Bowser (1st), Peach (2nd), and Mario (3rd) with floating CSS micro-animations on the Game 2 reveal podium.
 - [x] Removed header submission lock button in User Portal and added manual `PROCEED TO NEXT STAGE ➔` action bar allowing users ample time to review AI responses before advancing.
+- [x] Reframed Game 2 technique titles, explanations ("Why Tested"), expected learning outcomes, and task clear outcomes in `user.html` and `server.js` to focus positively on constructive prompt engineering skills (PTCF protocol mastery, output format restriction/enrichment, and scenario re-framing).
 - [x] Passed `activeMasterIndex` from server room state inside `player-reveal` socket event, ensuring user poster always displays the exact round master image rather than defaulting to index 0 ("Spirited Anime Shrine").
 - [x] Optimized `@media print` rules with `size: portrait; height: 100vh; page-break-inside: avoid;` and enforced `.poster-image-row` 2-column grid (`grid-template-columns: 1fr 1fr;`) to place Master Target and Your Generation horizontally side-by-side.
 - [x] Fixed Game 1 `start-game` server handler to pick a fresh random target image (from 1 to 20) on every round start, resolving repeated "Spirited Anime Shrine" image assignments.
