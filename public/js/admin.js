@@ -281,14 +281,16 @@ async function loadAnalyticsData() {
           const tr = document.createElement('tr');
           tr.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
 
-          const formattedDate = new Date(room.created_at).toLocaleString('en-US', {
+          const formattedDate = new Date(room.created_at).toLocaleString('en-GB', {
+            timeZone: 'Asia/Hong_Kong',
             year: 'numeric',
             month: 'short',
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit',
-            second: '2-digit'
-          });
+            second: '2-digit',
+            hour12: false
+          }) + ' HKT';
 
           tr.innerHTML = `
             <td style="padding: 0.7rem 0.5rem; text-align: center; font-family: 'Orbitron', sans-serif; font-weight: bold; color: var(--accent-cyan);">#${room.room_id}</td>
