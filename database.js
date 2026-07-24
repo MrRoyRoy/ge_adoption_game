@@ -12,7 +12,8 @@ function initDatabase() {
       db.run(`
         CREATE TABLE IF NOT EXISTS rooms (
           id TEXT PRIMARY KEY,
-          status TEXT DEFAULT 'LOBBY', -- LOBBY, PLAYING, REVEAL, ENDED
+          status TEXT DEFAULT 'LOBBY', -- LOBBY, PLAYING, REVEAL, GALLERY, ENDED
+          game_mode TEXT DEFAULT 'GAME1', -- GAME1 (Image Prompting), GAME2 (Keep Koopa LLM)
           active_master_index INTEGER DEFAULT 0,
           created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
@@ -24,9 +25,11 @@ function initDatabase() {
           room_id TEXT,
           username TEXT,
           score INTEGER DEFAULT 0,
+          accumulated_score INTEGER DEFAULT 0,
           submitted_prompt TEXT,
           user_image_base64 TEXT,
           evaluation_json TEXT,
+          game2_state_json TEXT,
           has_submitted INTEGER DEFAULT 0,
           PRIMARY KEY (room_id, username)
         )
@@ -34,7 +37,12 @@ function initDatabase() {
         if (err) {
           reject(err);
         } else {
-          console.log('Database tables successfully initialized.');
+          // Perform safe column migrations if existing database table is present
+          db.run("ALTER TABLE rooms ADD COLUMN game_mode TEXT DEFAULT 'GAME1'", () => {});
+          db.run("ALTER TABLE players ADD COLUMN accumulated_score INTEGER DEFAULT 0", () => {});
+          db.run("ALTER TABLE players ADD COLUMN game2_state_json TEXT", () => {});
+          
+          console.log('Database tables successfully initialized and schema updated.');
           resolve();
         }
       });

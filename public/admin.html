@@ -58,17 +58,22 @@
     <!-- MAIN GAME STATE SHIFTER -->
     <main class="game-layout">
 
-      <!-- PHASE 1: LOBBY DASHBOARD (WAITING FOR PARTICIPANTS) -->
+      <!-- PHASE 1: LOBBY DASHBOARD (GAME SELECTION & PARTICIPANTS) -->
       <section id="admin-lobby" style="display: block;">
         <div class="grid-2">
           <!-- Left side: Joined players list -->
-          <div class="glass-panel" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 450px;">
+          <div class="glass-panel" style="display: flex; flex-direction: column; justify-content: space-between; min-height: 480px;">
             <div>
-              <h2 class="brand-font" style="font-size: 1.3rem; color: var(--accent-cyan); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                ✦ ACTIVE LOBBY
-              </h2>
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <h2 class="brand-font" style="font-size: 1.3rem; color: var(--accent-cyan); display: flex; align-items: center; gap: 0.5rem;">
+                  ✦ ACTIVE LOBBY
+                </h2>
+                <button id="open-overall-scoreboard-btn" class="btn btn-outline" style="font-size: 0.75rem; padding: 0.4rem 0.8rem; border-color: var(--accent-purple); color: var(--accent-purple);">
+                  🏆 Overall Scoreboard
+                </button>
+              </div>
               <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">
-                Displaying joined competitors in real-time. Instruct them to navigate to the landing page and input the room code.
+                Displaying joined competitors in real-time. Select a Game Mode below to launch the match for all connected players.
               </p>
               
               <!-- Realtime lobby roster -->
@@ -90,40 +95,61 @@
             </div>
           </div>
 
-          <!-- Right side: Master Image Picker -->
+          <!-- Right side: Game Selection Portal -->
           <div class="glass-panel" style="display: flex; flex-direction: column; justify-content: space-between;">
             <div>
               <h2 class="brand-font" style="font-size: 1.3rem; color: var(--accent-purple); margin-bottom: 0.5rem;">
-                ✦ IMAGE TARGET
+                ✦ GAME SELECTION PORTAL
               </h2>
-              <p style="font-size: 0.85rem; margin-bottom: 1.5rem;">
-                Select a target masterpiece from the GenAI 20-image master library for users to reverse-engineer.
+              <p style="font-size: 0.85rem; margin-bottom: 1rem;">
+                Select a game mode to launch for all competitors in the room:
               </p>
 
-              <!-- Carousel/Dropdown selector -->
-              <div class="input-group" style="margin-bottom: 1rem;">
-                <label for="master-select">Select Masterpiece</label>
-                <select id="master-select" class="input-control" style="font-family: 'Orbitron', sans-serif;">
-                  <!-- Options will load dynamically -->
-                </select>
-              </div>
+              <!-- Game Cards Grid -->
+              <div style="display: flex; flex-direction: column; gap: 1rem;">
+                
+                <!-- Game 1: Image Prompting -->
+                <div id="card-game1" class="game-selection-card active-card" style="background: rgba(20, 10, 35, 0.7); border: 2px solid var(--accent-cyan); border-radius: 12px; overflow: hidden; padding: 1rem; position: relative; cursor: pointer; transition: all 0.25s ease;">
+                  <div style="display: flex; gap: 1rem; align-items: center;">
+                    <div style="width: 100px; height: 75px; border-radius: 8px; overflow: hidden; border: 1px solid var(--glass-border); flex-shrink: 0; background: #000;">
+                      <img src="/assets/lobby/banner-game1.jpg" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div style="flex-grow: 1;">
+                      <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3 class="brand-font" style="font-size: 0.95rem; color: var(--accent-cyan);">Game 1: Image Prompting</h3>
+                        <span style="background: rgba(0,240,255,0.15); color: var(--accent-cyan); font-size: 0.65rem; font-family: 'Orbitron', sans-serif; padding: 0.2rem 0.5rem; border-radius: 10px; border: 1px solid var(--accent-cyan);">RANDOM TARGET</span>
+                      </div>
+                      <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.3rem; line-height: 1.3;">
+                        Reverse-engineer a random master artwork target. Synthesize and lock prompts to match the master image!
+                      </p>
+                    </div>
+                  </div>
+                </div>
 
-              <!-- Chosen target details preview -->
-              <div style="display: flex; gap: 1rem; align-items: center; background: rgba(0,0,0,0.3); border-radius: 8px; padding: 1rem; border: 1px solid var(--glass-border);">
-                <div style="width: 80px; height: 80px; border-radius: 6px; overflow: hidden; border: 1px solid var(--glass-border); flex-shrink: 0; background: #000;">
-                  <img src="" id="master-preview-img" style="width:100%; height:100%; object-fit: cover; display: none;">
-                  <div id="master-preview-fallback" style="display: flex; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); font-size: 0.65rem; text-align: center;">No image</div>
+                <!-- Game 2: Keep Koopa Text Trials -->
+                <div id="card-game2" class="game-selection-card" style="background: rgba(10, 15, 30, 0.7); border: 1px solid var(--glass-border); border-radius: 12px; overflow: hidden; padding: 1rem; position: relative; cursor: pointer; transition: all 0.25s ease;">
+                  <div style="display: flex; gap: 1rem; align-items: center;">
+                    <div style="width: 100px; height: 75px; border-radius: 8px; overflow: hidden; border: 1px solid var(--glass-border); flex-shrink: 0; background: #000;">
+                      <img src="/assets/lobby/banner-game2.jpg" style="width: 100%; height: 100%; object-fit: cover;">
+                    </div>
+                    <div style="flex-grow: 1;">
+                      <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3 class="brand-font" style="font-size: 0.95rem; color: #ff0055;">Game 2: Keep Koopa 3 Trials</h3>
+                        <span style="background: rgba(255,0,85,0.15); color: #ff0055; font-size: 0.65rem; font-family: 'Orbitron', sans-serif; padding: 0.2rem 0.5rem; border-radius: 10px; border: 1px solid #ff0055;">3 LLM TASKS</span>
+                      </div>
+                      <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.3rem; line-height: 1.3;">
+                        Interactive LLM chat hacking challenge! Solve Kamek's Spell-Lock, Airship Format Trial, and Bowser's Password!
+                      </p>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <h3 id="master-preview-title" style="font-size: 0.95rem; color: var(--text-primary); margin-bottom: 0.2rem;">---</h3>
-                  <p id="master-preview-category" style="font-size: 0.75rem; color: var(--accent-cyan); text-transform: uppercase; font-family: 'Orbitron', sans-serif;">CATEGORY: ---</p>
-                  <p id="master-preview-difficulty" style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.1rem;">Difficulty: ---</p>
-                </div>
+
               </div>
             </div>
 
-            <button id="start-game-btn" class="btn btn-purple" style="width: 100%; margin-top: 1.5rem;" disabled>
-              Launch Neural Match
+            <!-- Launch Game CTA Button -->
+            <button id="start-game-btn" class="btn btn-purple" style="width: 100%; padding: 1rem; margin-top: 1.5rem; font-size: 0.95rem; letter-spacing: 2px;">
+              🚀 LAUNCH SELECTED GAME
             </button>
           </div>
         </div>
@@ -131,16 +157,17 @@
 
       <!-- PHASE 2: ACTIVE PLAYING (TARGET ON CENTRAL SCREEN, WATCHING SUBMISSIONS) -->
       <section id="admin-playing" style="display: none;">
-        <div style="display: grid; grid-template-columns: 82% 18%; gap: 1.5rem;">
+        <!-- Standard Game 1 Layout -->
+        <div id="game1-playing-layout" style="display: grid; grid-template-columns: 74% 26%; gap: 1.5rem;">
           <!-- Left side: The Target Master Image displayed on projector screen -->
-          <div class="glass-panel" style="padding: 1.5rem;">
+          <div class="glass-panel" style="padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
               <h2 class="brand-font" id="active-master-title" style="font-size: 1.2rem; color: var(--text-primary);">---</h2>
               <span id="active-master-category" style="font-family: 'Orbitron', sans-serif; font-size: 0.75rem; background: var(--accent-purple); padding: 0.3rem 0.8rem; border-radius: 30px; text-transform: uppercase; font-weight: 700;">---</span>
             </div>
             
-            <div class="image-card" style="margin-bottom: 1rem; border: 2px solid var(--glass-border);">
-              <img src="" id="active-master-img" style="width: 100%; height:100%; object-fit: cover;">
+            <div class="image-card" style="margin-bottom: 0.5rem; border: 2px solid var(--glass-border); flex-grow: 1; aspect-ratio: unset; height: 500px;">
+              <img src="/assets/lobby/banner-game1.jpg" id="active-master-img" style="width: 100%; height: 100%; object-fit: contain;" onerror="this.onerror=null; this.src='/assets/lobby/banner-game1.jpg';">
             </div>
             
             <!-- Hidden at this page; will be shown at the gallery page instead -->
@@ -150,32 +177,106 @@
           </div>
 
           <!-- Right side: Progress tracking, submissions indicator -->
-          <div class="glass-panel" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1rem;">
-            <div>
-              <h2 class="brand-font" style="font-size: 1rem; color: var(--accent-cyan); margin-bottom: 0.3rem;">
-                ✦ ARENA STATUS
-              </h2>
-              <p style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 1rem; line-height: 1.3;">
-                Waiting for competitor prompt locks.
-              </p>
+          <div class="glass-panel" style="display: flex; flex-direction: column; justify-content: space-between; padding: 1.5rem; height: 100%; min-height: 580px;">
+            <div style="display: flex; flex-direction: column; height: 100%; justify-content: space-between; flex-grow: 1; gap: 1rem;">
+              <div>
+                <h2 class="brand-font" style="font-size: 0.85rem; color: var(--accent-cyan); margin-bottom: 1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">
+                  ✦ ARENA STATUS: Waiting for competitor prompt locks...
+                </h2>
 
-              <!-- Central progress dial -->
-              <div style="text-align: center; margin-bottom: 1.5rem;">
-                <div style="font-family: 'Orbitron', sans-serif; font-size: 3rem; font-weight: 900; color: var(--accent-cyan); line-height: 1; text-shadow: var(--glow-cyan);">
-                  <span id="submitted-count">0</span><span style="color: var(--text-muted); font-size: 1.5rem;">/</span><span id="total-count" style="color: var(--text-muted); font-size: 1.8rem;">0</span>
+                <!-- Central progress dial -->
+                <div style="text-align: center; margin-bottom: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--glass-border); background: rgba(0, 240, 255, 0.015); border-radius: 4px;">
+                  <div style="font-family: 'Orbitron', sans-serif; font-size: 6rem; font-weight: 900; color: var(--accent-cyan); line-height: 1; text-shadow: var(--glow-cyan);">
+                    <span id="submitted-count">0</span><span style="color: var(--text-muted); font-size: 2.2rem; margin: 0 0.1rem;">/</span><span id="total-count" style="color: var(--text-muted); font-size: 2.5rem;">0</span>
+                  </div>
+                  <p style="font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px; color: var(--accent-cyan); margin-top: 0.4rem; font-weight: bold; font-family: 'Orbitron', sans-serif;">SUBMITTED</p>
                 </div>
-                <p style="font-size: 0.6rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-top: 0.3rem;">SUBMITTED</p>
+
+                <p style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-secondary); margin-bottom: 0.5rem; font-family: 'Orbitron', sans-serif; font-weight: 700;">
+                  ⚡ Competitor Roster:
+                </p>
               </div>
 
               <!-- List of players in round, colored by submission state -->
-              <div id="round-roster" class="player-list" style="margin-bottom: 1rem; max-height: 140px; overflow-y: auto; padding-right: 0.2rem;">
-                <!-- badgess will update in real time -->
+              <div id="round-roster" class="player-list" style="flex-grow: 1; min-height: 220px; max-height: 380px; overflow-y: auto; overflow-x: hidden; padding-right: 0.3rem; display: flex; flex-direction: row; flex-wrap: wrap; align-content: flex-start; gap: 0.5rem; justify-content: flex-start;">
+                <!-- badges will update in real time -->
+              </div>
+
+              <!-- End Submissions Command Button -->
+              <div style="margin-top: 1rem; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
+                <button id="end-game-btn" class="btn btn-purple" style="width: 100%; font-size: 0.85rem; padding: 0.9rem;">
+                  🔒 END SUBMISSIONS & SCORE
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dedicated Game 2 Layout: 3-Stage Dynamic Track with Ambient Backdrop -->
+        <div id="game2-playing-layout" class="glass-panel" style="display: none; position: relative; overflow: hidden; padding: 2rem; border-color: rgba(255,0,85,0.4); background: radial-gradient(circle at center, rgba(30,10,25,0.85), rgba(8,5,15,0.95));">
+          <div style="position: absolute; top:0; left:0; width:100%; height:100%; background: url('/assets/lobby/banner-game2.jpg') center/cover no-repeat; opacity: 0.18; pointer-events: none; animation: ambientBreathing 12s ease-in-out infinite;"></div>
+          
+          <div style="position: relative; z-index: 2;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,0,85,0.3); padding-bottom: 1rem; margin-bottom: 1.5rem;">
+              <div>
+                <h2 class="brand-font" style="font-size: 1.6rem; color: #ff0055; text-shadow: 0 0 15px rgba(255,0,85,0.4); margin-bottom: 0.2rem;">
+                  🏰 KEEP KOOPA: 3 TRIALS ARENA TRACK
+                </h2>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); margin: 0;">
+                  Live Competitor Stage Progression & Neural Hacking Track
+                </p>
+              </div>
+              <div style="display: flex; gap: 1rem; align-items: center;">
+                <div style="background: rgba(0,0,0,0.6); border: 1px solid var(--glass-border); padding: 0.5rem 1.2rem; border-radius: 20px; font-family: 'Orbitron', sans-serif; font-size: 0.85rem; color: var(--accent-cyan);">
+                  FINISHED: <span id="game2-submitted-count" style="color:#fff; font-weight:bold;">0</span> / <span id="game2-total-count" style="color:var(--text-muted);">0</span>
+                </div>
+                <button id="game2-end-game-btn" class="btn" style="background: linear-gradient(135deg, #ff0055, #bc00dd); color: #fff; font-size: 0.85rem; padding: 0.7rem 1.4rem; box-shadow: 0 0 15px rgba(255,0,85,0.4);">
+                  🔒 END SUBMISSIONS & SHOW SCOREBOARD
+                </button>
               </div>
             </div>
 
-            <button id="end-game-btn" class="btn btn-cyan" style="width: 100%; padding: 0.6rem; font-size: 0.8rem;">
-              End Submissions & Score Round
-            </button>
+            <!-- 3 Horizontal Stage Track Lanes -->
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; min-height: 480px;">
+              <!-- STAGE 1: SPELL-LOCK -->
+              <div class="game2-stage-card" style="background: rgba(10, 15, 30, 0.6); border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 12px; padding: 1.2rem; display: flex; flex-direction: column; position: relative; overflow: hidden;">
+                <div style="position: absolute; top:0; left:0; width:100%; height:100%; background: url('/assets/game2/task1-spell-lock.jpg') center/cover; opacity: 0.15; pointer-events:none;"></div>
+                <div style="position: relative; z-index:2; border-bottom: 1px solid rgba(0, 240, 255, 0.2); padding-bottom: 0.8rem; margin-bottom: 1rem;">
+                  <span style="font-family:'Orbitron',sans-serif; font-size:0.7rem; color:var(--accent-cyan); background:rgba(0,240,255,0.15); padding:0.2rem 0.6rem; border-radius:10px; font-weight:bold;">STAGE 1</span>
+                  <h3 class="brand-font" style="font-size: 1.1rem; color: #fff; margin-top: 0.4rem;">Kamek's Spell-Lock</h3>
+                  <p style="font-size: 0.75rem; color: var(--text-secondary); margin:0;">PTCF Protocol Requirement</p>
+                </div>
+                <div id="game2-stage1-players" style="flex-grow: 1; display: flex; flex-direction: column; gap: 0.6rem; overflow-y: auto; max-height: 380px; padding-right: 0.2rem; position: relative; z-index:2;">
+                  <!-- Dynamic player chips -->
+                </div>
+              </div>
+
+              <!-- STAGE 2: AIRSHIP FLEET -->
+              <div class="game2-stage-card" style="background: rgba(25, 10, 30, 0.6); border: 1px solid rgba(255, 0, 85, 0.3); border-radius: 12px; padding: 1.2rem; display: flex; flex-direction: column; position: relative; overflow: hidden;">
+                <div style="position: absolute; top:0; left:0; width:100%; height:100%; background: url('/assets/game2/task2-airship-fleet.jpg') center/cover; opacity: 0.15; pointer-events:none;"></div>
+                <div style="position: relative; z-index:2; border-bottom: 1px solid rgba(255, 0, 85, 0.2); padding-bottom: 0.8rem; margin-bottom: 1rem;">
+                  <span style="font-family:'Orbitron',sans-serif; font-size:0.7rem; color:#ff0055; background:rgba(255,0,85,0.15); padding:0.2rem 0.6rem; border-radius:10px; font-weight:bold;">STAGE 2</span>
+                  <h3 class="brand-font" style="font-size: 1.1rem; color: #fff; margin-top: 0.4rem;">Airship War Fleet</h3>
+                  <p style="font-size: 0.75rem; color: var(--text-secondary); margin:0;">Military Checklist Structure</p>
+                </div>
+                <div id="game2-stage2-players" style="flex-grow: 1; display: flex; flex-direction: column; gap: 0.6rem; overflow-y: auto; max-height: 380px; padding-right: 0.2rem; position: relative; z-index:2;">
+                  <!-- Dynamic player chips -->
+                </div>
+              </div>
+
+              <!-- STAGE 3: BOWSER DUNGEON -->
+              <div class="game2-stage-card" style="background: rgba(30, 15, 10, 0.6); border: 1px solid rgba(255, 183, 0, 0.3); border-radius: 12px; padding: 1.2rem; display: flex; flex-direction: column; position: relative; overflow: hidden;">
+                <div style="position: absolute; top:0; left:0; width:100%; height:100%; background: url('/assets/game2/task3-dungeon-castle.jpg') center/cover; opacity: 0.15; pointer-events:none;"></div>
+                <div style="position: relative; z-index:2; border-bottom: 1px solid rgba(255, 183, 0, 0.2); padding-bottom: 0.8rem; margin-bottom: 1rem;">
+                  <span style="font-family:'Orbitron',sans-serif; font-size:0.7rem; color:var(--accent-gold); background:rgba(255,183,0,0.15); padding:0.2rem 0.6rem; border-radius:10px; font-weight:bold;">STAGE 3 / FINISHED</span>
+                  <h3 class="brand-font" style="font-size: 1.1rem; color: #fff; margin-top: 0.4rem;">Bowser's Dungeon</h3>
+                  <p style="font-size: 0.75rem; color: var(--text-secondary); margin:0;">Password Extraction Vault</p>
+                </div>
+                <div id="game2-stage3-players" style="flex-grow: 1; display: flex; flex-direction: column; gap: 0.6rem; overflow-y: auto; max-height: 380px; padding-right: 0.2rem; position: relative; z-index:2;">
+                  <!-- Dynamic player chips -->
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </section>
@@ -183,10 +284,10 @@
       <!-- PHASE 3: REVEAL LEADERBOARD (KHOOT PODIUM FINISH) -->
       <section id="admin-reveal" style="display: none;">
         <div class="glass-panel text-center" style="text-align: center; margin-bottom: 2rem;">
-          <h1 class="brand-font" style="font-size: 2.5rem; color: var(--accent-gold); text-shadow: var(--glow-cyan); margin-bottom: 0.5rem;">
+          <h1 class="brand-font" id="reveal-title-text" style="font-size: 2.5rem; color: var(--accent-gold); text-shadow: var(--glow-cyan); margin-bottom: 0.5rem;">
             ✦ THE PODIUM ✦
           </h1>
-          <p style="font-size: 1rem; color: var(--text-secondary);">
+          <p id="reveal-subtitle-text" style="font-size: 1rem; color: var(--text-secondary);">
             The neural metrics have spoken. Celebrating the top prompt engineering specialists of the round.
           </p>
         </div>
@@ -224,8 +325,28 @@
           </div>
         </div>
 
+        <!-- Dedicated Top 10 Leaderboard Table for Game 2 -->
+        <div id="game2-top10-container" class="glass-panel" style="display: none; max-width: 800px; margin: 2rem auto 0 auto; padding: 1.5rem; border-color: rgba(255,0,85,0.3);">
+          <h3 class="brand-font" style="font-size: 1.1rem; color: #ff0055; text-align: center; margin-bottom: 1rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">
+            🏆 TOP 10 KEEP KOOPA CHAMPIONS
+          </h3>
+          <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid var(--glass-border); color: var(--accent-cyan); font-family: 'Orbitron', sans-serif; font-size: 0.75rem;">
+                <th style="padding: 0.6rem; text-align: center;">RANK</th>
+                <th style="padding: 0.6rem;">COMPETITOR</th>
+                <th style="padding: 0.6rem; text-align: center;">STAGE CLEARED</th>
+                <th style="padding: 0.6rem; text-align: right;">TOTAL SCORE</th>
+              </tr>
+            </thead>
+            <tbody id="game2-top10-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
         <!-- Action panel to go to next round -->
-        <div style="display: flex; justify-content: center; gap: 1.5rem; margin-top: 3rem;">
+        <div style="display: flex; justify-content: center; gap: 1.5rem; margin-top: 2.5rem;">
           <button id="go-to-gallery-btn" class="btn btn-cyan" style="min-width: 250px; box-shadow: 0 0 15px rgba(0, 240, 255, 0.25);">
             Show Detailed Review & Gallery
           </button>
@@ -246,60 +367,36 @@
           </p>
         </div>
 
-        <div style="display: flex; gap: 1.5rem; margin-bottom: 2rem; min-height: 580px;">
-          <!-- Left Panel: Pro Tips & Instructions (30% width) -->
-          <div class="glass-panel" style="flex: 0.9; padding: 1.8rem; display: flex; flex-direction: column; justify-content: space-between;">
-            <div>
-              <h3 class="brand-font" style="font-size: 1rem; color: var(--accent-cyan); margin-bottom: 1.2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                💡 GENERATION TIPS
-              </h3>
+        <div style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 1.5rem; margin-bottom: 2rem; min-height: 580px;">
+          <!-- Left: Master Image Reveal, Characteristics, and Pro Tips -->
+          <div class="glass-panel" style="padding: 2rem;">
+            <h2 class="brand-font" style="font-size: 1.1rem; color: var(--accent-purple); margin-bottom: 1.2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">
+              🎯 TARGET IMAGE SPECIFICATIONS
+            </h2>
+            <div class="image-card" id="gallery-master-card" style="height: 250px; max-width: 350px; margin: 0 auto 1.2rem; display: flex; align-items: center; justify-content: center; background: #000; overflow: hidden; border: 1px solid var(--glass-border); cursor: pointer; transition: all 0.3s ease;">
+              <img src="" id="gallery-master-img" style="width: 100%; height: 100%; object-fit: contain;">
+            </div>
+
+            <!-- Blueprint -->
+            <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; border: 1px solid var(--glass-border); margin-bottom: 1.2rem;">
+              <p style="font-size: 0.7rem; font-family: 'Orbitron', sans-serif; color: var(--accent-cyan); text-transform: uppercase; margin-bottom: 0.3rem;">Target Characteristics (Master Prompt):</p>
+              <p id="gallery-master-desc" style="font-size: 0.8rem; font-style: italic; line-height: 1.4; color: #fff; margin: 0;"></p>
+            </div>
+
+            <!-- Pro-tips -->
+            <div style="background: rgba(0, 240, 255, 0.02); border: 1px solid rgba(0, 240, 255, 0.1); border-radius: 8px; padding: 1rem;">
+              <h3 class="brand-font" style="font-size: 0.8rem; color: var(--accent-cyan); margin-bottom: 0.6rem;">💡 IMAGE GENERATION TIPS</h3>
               <ul class="suggestion-bullets" style="padding-left: 0; margin: 0; list-style: none;">
-                <li style="margin-bottom: 0.8rem; font-size: 0.75rem; line-height: 1.4; display: flex; gap: 0.4rem;">
-                  <span style="color: var(--accent-cyan);">✦</span>
-                  <div><strong>Camera Specs:</strong> Specify focal lenses (<em>"85mm lens"</em>) or angles (<em>"isometric perspective"</em>).</div>
-                </li>
-                <li style="margin-bottom: 0.8rem; font-size: 0.75rem; line-height: 1.4; display: flex; gap: 0.4rem;">
-                  <span style="color: var(--accent-cyan);">✦</span>
-                  <div><strong>Lighting:</strong> Describe setups (<em>"volumetric sunset rays"</em>, <em>"high-contrast chiaroscuro"</em>).</div>
-                </li>
-                <li style="margin-bottom: 0.8rem; font-size: 0.75rem; line-height: 1.4; display: flex; gap: 0.4rem;">
-                  <span style="color: var(--accent-cyan);">✦</span>
-                  <div><strong>Style & Mediums:</strong> State mediums (<em>"3D octane render"</em>, <em>"expressionist oil paint"</em>).</div>
-                </li>
-                <li style="font-size: 0.75rem; line-height: 1.4; display: flex; gap: 0.4rem;">
-                  <span style="color: var(--accent-cyan);">✦</span>
-                  <div><strong>Ditch Adjectives:</strong> Ditch words like <em>"beautiful"</em> or <em>"perfect"</em>. Describe textures instead.</div>
-                </li>
+                <li style="margin-bottom: 0.6rem; font-size: 0.75rem; line-height: 1.4;">✦ <strong>Camera & Lenses:</strong> Define focal lengths (<em>"35mm cinematic close-up"</em>) and perspective controls.</li>
+                <li style="margin-bottom: 0.6rem; font-size: 0.75rem; line-height: 1.4;">✦ <strong>Lighting Settings:</strong> Request atmospheric illumination explicitly (<em>"volumetric golden rays"</em>).</li>
+                <li style="margin-bottom: 0.6rem; font-size: 0.75rem; line-height: 1.4;">✦ <strong>Visual Mediums:</strong> Choose explicit platforms (<em>"Unreal Engine 5 render"</em>, <em>"watercolors"</em>).</li>
+                <li style="font-size: 0.75rem; line-height: 1.4;">✦ <strong>Textual Specifics:</strong> Avoid buzzwords like <em>"beautiful"</em>; list precise structures instead.</li>
               </ul>
             </div>
-            
-            <div style="background: rgba(0,0,0,0.3); padding: 1rem; border-radius: 8px; border: 1px solid var(--glass-border); margin-top: 1.5rem;">
-              <p style="font-size: 0.7rem; font-family: 'Orbitron', sans-serif; color: var(--accent-cyan); text-transform: uppercase; margin-bottom: 0.3rem; letter-spacing: 1px;">Characteristics Blueprint</p>
-              <p id="gallery-master-desc" style="font-size: 0.8rem; font-style: italic; line-height: 1.3; color: #fff; margin: 0;"></p>
-            </div>
           </div>
 
-          <!-- Center Panel: The Target Master Image (35% width) -->
-          <div class="glass-panel text-center" style="flex: 1.2; padding: 1.8rem; display: flex; flex-direction: column; justify-content: space-between; align-items: center;">
-            <div style="width: 100%;">
-              <h2 class="brand-font" style="font-size: 1.1rem; color: var(--accent-purple); margin-bottom: 1.2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem; text-align: left;">
-                🎯 MASTER TARGET BLUEPRINT
-              </h2>
-              <p style="font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1rem; text-align: left;">
-                Click the master target image below to enlarge and view complete prompt descriptors.
-              </p>
-              <div class="image-card" id="gallery-master-card" style="height: 330px; width: 100%; border: 2px solid var(--glass-border); cursor: pointer; transition: all 0.3s ease-in-out;">
-                <img src="" id="gallery-master-img" style="width: 100%; height: 100%; object-fit: contain;">
-              </div>
-            </div>
-            
-            <button id="gallery-reset-btn" class="btn btn-purple" style="width: 100%; margin-top: 1.5rem; padding: 0.8rem;">
-              Back to Game Selection
-            </button>
-          </div>
-
-          <!-- Right Panel: Arena Galleries (35% width) -->
-          <div class="glass-panel" style="flex: 1.1; padding: 1.8rem; display: flex; flex-direction: column; justify-content: space-between;">
+          <!-- Right: Grid of results -->
+          <div class="glass-panel" style="padding: 2rem; display: flex; flex-direction: column; justify-content: space-between;">
             <div>
               <h2 class="brand-font" style="font-size: 1.1rem; color: var(--accent-cyan); margin-bottom: 1.2rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 0.5rem;">
                 🎨 ARENA GALLERIES
@@ -308,11 +405,16 @@
                 Click any card to expand synthesized images and colleague scoring metrics.
               </p>
               
-              <!-- Responsive Grid container -->
-              <div id="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.8rem; max-height: 400px; overflow-y: auto; padding: 0.4rem; border: 1px solid rgba(255,255,255,0.03); border-radius: 6px; background: rgba(0,0,0,0.15);">
+              <!-- Responsive Grid container with padding protection to avoid hover cropping -->
+              <div id="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 0.8rem; max-height: 420px; overflow-y: auto; padding: 0.8rem; border: 1px solid rgba(255,255,255,0.03); border-radius: 6px; background: rgba(0,0,0,0.15);">
                 <!-- Filled dynamically -->
               </div>
             </div>
+
+            <!-- Initiate Next Round trigger -->
+            <button id="gallery-reset-btn" class="btn btn-purple" style="width: 100%; margin-top: 1.5rem; padding: 0.9rem;">
+              Back to Game Selection
+            </button>
           </div>
         </div>
       </section>
@@ -339,6 +441,40 @@
         </div>
       </div>
 
+      <!-- Overall Cumulative Scoreboard Modal -->
+      <div id="overall-scoreboard-modal" class="modal-backdrop" style="display: none; z-index: 10000; align-items: center; justify-content: center;">
+        <div class="glass-panel modal-content" style="max-width: 650px; width: 90%; padding: 2rem; border-color: var(--accent-purple); position: relative;">
+          <button id="scoreboard-close-btn" style="position: absolute; top: 1rem; right: 1rem; background: none; border: none; color: var(--text-muted); font-size: 1.5rem; cursor: pointer;">&times;</button>
+          
+          <div style="text-align: center; margin-bottom: 1.5rem;">
+            <h2 class="brand-font" style="font-size: 1.4rem; color: var(--accent-purple); margin-bottom: 0.3rem;">
+              🏆 OVERALL CUMULATIVE SCOREBOARD
+            </h2>
+            <p style="font-size: 0.8rem; color: var(--text-secondary);">
+              Accumulated scores across all played rounds for this room session:
+            </p>
+          </div>
+
+          <div style="max-height: 350px; overflow-y: auto; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px solid var(--glass-border); padding: 0.5rem;">
+            <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+              <thead>
+                <tr style="border-bottom: 1px solid var(--glass-border); color: var(--accent-cyan); font-family: 'Orbitron', sans-serif; font-size: 0.75rem;">
+                  <th style="padding: 0.75rem; text-align: center;">RANK</th>
+                  <th style="padding: 0.75rem;">COMPETITOR</th>
+                  <th style="padding: 0.75rem; text-align: right;">CUMULATIVE SCORE</th>
+                </tr>
+              </thead>
+              <tbody id="overall-scoreboard-tbody">
+                <!-- Rows load dynamically -->
+                <tr>
+                  <td colspan="3" style="text-align: center; padding: 2rem; color: var(--text-muted);">No match data recorded yet. Launch a game to score points!</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
     </main>
   </div>
 
@@ -349,10 +485,10 @@
         <span style="color: var(--accent-purple); font-size: 1.5rem; font-family: 'Orbitron', sans-serif;">⚠️</span>
       </div>
       <h3 class="brand-font" id="confirm-title" style="font-size: 1.2rem; color: #fff; margin-bottom: 0.8rem; text-transform: uppercase; letter-spacing: 1px;">
-        CONFIRM TERMINATION
+        CONFIRM ACTION
       </h3>
       <p id="confirm-message" style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.5;">
-        Are you sure you want to terminate this room? All records will be deleted immediately.
+        Are you sure you want to proceed?
       </p>
       
       <div style="display: flex; gap: 1rem;">
@@ -360,7 +496,7 @@
           CANCEL
         </button>
         <button id="confirm-ok-btn" class="btn btn-purple" style="flex: 1.2; padding: 0.8rem; box-shadow: 0 0 15px rgba(188,0,221,0.3);">
-          CONFIRM TERMINATION
+          CONFIRM
         </button>
       </div>
     </div>

@@ -50,10 +50,19 @@
 - [x] Removed the "Play Again" redirect button from the player certificate workspace to enforce administrative command control.
 - [x] Engineered the **Back to Game Selection** loop (`reset-to-lobby` socket listener), allowing administrators to clear round history and return to the master image lobby picker securely.
 - [x] Replaced the 2-column detailed review layout with a premium 3-column balanced grid centering the active Master Image blueprint card, and made the master target fully zoom-expandable inside lightboxes.
+- [x] Restored the premium 2-column Detailed Review layout in `admin.html` matching the user cockpit, while horizontally centering the master image inside the left specification panel.
 - [x] Integrated SVG warning placeholders across competitor cards and lightbox overlays to represent unsubmitted players seamlessly without broken image links.
-- [x] Eradicated hover-scaling clipping bugs inside scrolling grid columns by applying relative positioning and hover z-indices on image items.
-- [x] Streamlined the active arena status panel on the active playing screen, shrinking text prompts to highlight numeric progress counters and primary scoring buttons.
+- [x] Eradicated hover-scaling clipping bugs inside scrolling grid columns by applying relative positioning, hover z-indices, and setting a `0.8rem` safety padding around `#gallery-grid` and `#user-gallery-grid` elements.
+- [x] Streamlined the active arena status panel into a single unified sentence, maximizing screen clarity.
+- [x] Scaled the active playing submission count dial to a massive, visually dominant font size (`6rem`) with a glowing cybernetic design.
+- [x] Replaced the narrow active playing sidebar columns (from `82% 18%` to `74% 26%`) and expanded the competitor roster `#round-roster`'s vertical layout properties to utilize all vertical sidebar space without clipping.
+- [x] Configured competitor badges in `admin.js` to resize dynamically and wrap to the next line as a floating flex row layout, rather than being constrained to a single vertical column list.
+- [x] Enforced strict 15-character name truncation with `"..."` ellipsis inside competitor badges, while attaching a native hover tooltip `title` attribute to show the complete original username seamlessly.
+- [x] Implemented Game 2 Admin End Submission 3-Stage Track (Spell-Lock, Airship Fleet, Bowser Dungeon) over an animated ambient backdrop with real-time player chips.
+- [x] Generated paper cutout character artwork (`bowser-cutout.jpg`, `peach-cutout.jpg`, `mario-cutout.jpg`) via `gemini-3.5-flash-image-lite` for Bowser (1st), Peach (2nd), and Mario (3rd) with floating CSS micro-animations on the Game 2 reveal podium.
+- [x] Built dedicated Top 10 Keep Koopa Champions leaderboard table and streamlined direct return to lobby.
+- [x] Removed header submission lock button in User Portal and added manual `PROCEED TO NEXT STAGE ➔` action bar allowing users ample time to review AI responses before advancing.
 
 ### Active/Next Tasks
-- [ ] Monitor live Cloud Run server telemetry and user engagement.
-- [ ] Expand multimodal grading rubrics if further grading facets are desired.
+- [ ] Monitor live Cloud Run server telemetry during active multi-game workshops.
+- [ ] Expand optional custom prompt challenge scenarios for future training sessions.

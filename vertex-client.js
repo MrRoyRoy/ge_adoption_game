@@ -110,7 +110,51 @@ async function evaluateImages(masterBase64, userBase64, userPrompt) {
   }
 }
 
+/**
+ * Perform interactive LLM chat for Game 2 (Keep Koopa)
+ */
+async function chatWithLLM(systemInstruction, userPrompt, chatHistory = []) {
+  console.log(`Calling Gemini chat model [${GEMINI_MODEL}] for Game 2 task...`);
+
+  // Build formatted contents from chat history + new user prompt
+  const contents = [];
+  if (Array.isArray(chatHistory)) {
+    for (const msg of chatHistory) {
+      contents.push({
+        role: msg.sender === 'USER' ? 'user' : 'model',
+        parts: [{ text: msg.text }]
+      });
+    }
+  }
+  
+  contents.push({
+    role: 'user',
+    parts: [{ text: userPrompt }]
+  });
+
+  try {
+    const response = await ai.models.generateContent({
+      model: GEMINI_MODEL,
+      contents: contents,
+      config: {
+        systemInstruction: systemInstruction,
+        temperature: 0.7
+      }
+    });
+
+    if (!response.candidates || response.candidates.length === 0) {
+      throw new Error('Gemini chat returned empty candidates list');
+    }
+
+    return response.candidates[0].content.parts[0].text;
+  } catch (error) {
+    console.error('Error in Game 2 LLM chat via Vertex GenAI:', error);
+    throw error;
+  }
+}
+
 module.exports = {
   generateImage,
-  evaluateImages
+  evaluateImages,
+  chatWithLLM
 };

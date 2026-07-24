@@ -29,8 +29,10 @@ function showCustomNotification(message, type = 'info') {
   }, 3500);
 }
 
+const NO_IMAGE_SVG = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100%" height="100%" fill="%230a0f1d"/><text x="50%" y="45%" fill="%23ff3366" font-family="sans-serif" font-size="24" text-anchor="middle">⚡</text><text x="50%" y="70%" fill="%238a9bb0" font-family="sans-serif" font-size="9" text-anchor="middle">NO IMAGE</text></svg>';
+
 // Custom Confirmation Dialog Overlay Utility (Admin Portal)
-function showCustomConfirm(title, message, onConfirm) {
+function showCustomConfirm(title, message, onConfirm, confirmText = 'CONFIRM') {
   const modal = document.getElementById('custom-confirm-modal');
   const titleEl = document.getElementById('confirm-title');
   const msgEl = document.getElementById('confirm-message');
@@ -44,25 +46,27 @@ function showCustomConfirm(title, message, onConfirm) {
   
   titleEl.textContent = title.toUpperCase();
   msgEl.textContent = message;
+  if (okBtn) okBtn.textContent = confirmText.toUpperCase();
   modal.style.display = 'flex';
   
   const cleanUp = () => {
     modal.style.display = 'none';
-    okBtn.removeEventListener('click', handleOk);
-    cancelBtn.removeEventListener('click', handleCancel);
+    if (okBtn) okBtn.onclick = null;
+    if (cancelBtn) cancelBtn.onclick = null;
   };
   
-  const handleOk = () => {
-    cleanUp();
-    onConfirm();
-  };
+  if (okBtn) {
+    okBtn.onclick = () => {
+      cleanUp();
+      onConfirm();
+    };
+  }
   
-  const handleCancel = () => {
-    cleanUp();
-  };
-  
-  okBtn.addEventListener('click', handleOk);
-  cancelBtn.addEventListener('click', handleCancel);
+  if (cancelBtn) {
+    cancelBtn.onclick = () => {
+      cleanUp();
+    };
+  }
 }
 
 const socket = io();
@@ -75,6 +79,7 @@ let masterImagesList = [];
 let roomPlayers = [];
 let selectedMasterIndex = 0;
 let activeMasterIndex = 0;
+let selectedGameMode = 'GAME1';
 
 // DOM Elements
 const roomCodeDisplay = document.getElementById('room-code-display');
@@ -103,6 +108,59 @@ const roundRoster = document.getElementById('round-roster');
 const endGameBtn = document.getElementById('end-game-btn');
 const resetRoundBtn = document.getElementById('reset-round-btn');
 
+// Update UI visual state for Game 1 vs Game 2 cards
+function updateGameCardsUI(mode) {
+  selectedGameMode = mode;
+  const cardGame1 = document.getElementById('card-game1');
+  const cardGame2 = document.getElementById('card-game2');
+
+  if (cardGame1 && cardGame2) {
+    if (mode === 'GAME2') {
+      cardGame2.classList.add('active-card');
+      cardGame2.style.border = '2px solid #ff0055';
+      cardGame2.style.background = 'rgba(255, 0, 85, 0.15)';
+      cardGame2.style.boxShadow = '0 0 20px rgba(255, 0, 85, 0.3)';
+
+      cardGame1.classList.remove('active-card');
+      cardGame1.style.border = '1px solid var(--glass-border)';
+      cardGame1.style.background = 'rgba(20, 10, 35, 0.5)';
+      cardGame1.style.boxShadow = 'none';
+    } else {
+      cardGame1.classList.add('active-card');
+      cardGame1.style.border = '2px solid var(--accent-cyan)';
+      cardGame1.style.background = 'rgba(0, 240, 255, 0.15)';
+      cardGame1.style.boxShadow = '0 0 20px rgba(0, 240, 255, 0.3)';
+
+      cardGame2.classList.remove('active-card');
+      cardGame2.style.border = '1px solid var(--glass-border)';
+      cardGame2.style.background = 'rgba(10, 15, 30, 0.5)';
+      cardGame2.style.boxShadow = 'none';
+    }
+  }
+}
+
+// Initialize Game Mode Card Selection in Lobby
+function setupGameSelectionCards() {
+  const cardGame1 = document.getElementById('card-game1');
+  const cardGame2 = document.getElementById('card-game2');
+
+  if (cardGame1 && cardGame2) {
+    cardGame1.onclick = (e) => {
+      e.stopPropagation();
+      selectedGameMode = 'GAME1';
+      updateGameCardsUI('GAME1');
+      socket.emit('select-game-mode', { roomId, gameMode: 'GAME1' });
+    };
+
+    cardGame2.onclick = (e) => {
+      e.stopPropagation();
+      selectedGameMode = 'GAME2';
+      updateGameCardsUI('GAME2');
+      socket.emit('select-game-mode', { roomId, gameMode: 'GAME2' });
+    };
+  }
+}
+
 // Direct URL Passcode Protection Logic
 const gateOverlay = document.getElementById('admin-gate-overlay');
 const gatePasscodeField = document.getElementById('admin-gate-passcode');
@@ -111,6 +169,10 @@ const gateSubmitBtn = document.getElementById('gate-submit-btn');
 const gateCancelBtn = document.getElementById('gate-cancel-btn');
 
 function checkAdminGate() {
+  if (roomId && roomCodeDisplay) {
+    roomCodeDisplay.textContent = `ROOM CODE: ${roomId}`;
+  }
+  setupGameSelectionCards();
   if (sessionStorage.getItem('isAdminAuthorized') === 'true') {
     initAdminPortal();
   } else {
@@ -149,6 +211,7 @@ function verifyGatePasscode() {
 function initAdminPortal() {
   if (roomId) {
     roomCodeDisplay.textContent = `ROOM CODE: ${roomId}`;
+    setupGameSelectionCards();
     socket.emit('admin-join', roomId);
     loadMasterImagesCatalog();
   } else {
@@ -169,15 +232,16 @@ async function loadMasterImagesCatalog() {
     if (!res.ok) throw new Error('Failed to load library catalog');
     masterImagesList = await res.json();
 
-    // Populate dropdown
-    masterSelect.innerHTML = masterImagesList.map((img, i) => 
-      `<option value="${i}">#${img.index} - ${img.title} (${img.difficulty})</option>`
-    ).join('');
+    // Populate dropdown if element exists
+    if (masterSelect) {
+      masterSelect.innerHTML = masterImagesList.map((img, i) => 
+        `<option value="${i}">#${img.index} - ${img.title} (${img.difficulty})</option>`
+      ).join('');
 
-    // Wire-up change listener
-    masterSelect.addEventListener('change', () => {
-      updateMasterPreview(masterSelect.value);
-    });
+      masterSelect.addEventListener('change', () => {
+        updateMasterPreview(masterSelect.value);
+      });
+    }
 
     // Initial load preview
     if (masterImagesList.length > 0) {
@@ -194,55 +258,141 @@ function updateMasterPreview(index) {
   const image = masterImagesList[index];
   
   if (image) {
-    masterPreviewImg.src = `assets/master-images/${image.filename}`;
-    masterPreviewImg.style.display = 'block';
-    masterPreviewFallback.style.display = 'none';
+    if (masterPreviewImg) {
+      masterPreviewImg.src = `assets/master-images/${image.filename}`;
+      masterPreviewImg.style.display = 'block';
+    }
+    if (masterPreviewFallback) masterPreviewFallback.style.display = 'none';
+    if (masterPreviewTitle) masterPreviewTitle.textContent = image.title;
+    if (masterPreviewCategory) masterPreviewCategory.textContent = `CATEGORY: ${image.category}`;
+    if (masterPreviewDifficulty) masterPreviewDifficulty.textContent = `Difficulty: ${image.difficulty} | Style: ${image.style}`;
     
-    masterPreviewTitle.textContent = image.title;
-    masterPreviewCategory.textContent = `CATEGORY: ${image.category}`;
-    masterPreviewDifficulty.textContent = `Difficulty: ${image.difficulty} | Style: ${image.style}`;
-    
-    startGameBtn.disabled = roomPlayers.length === 0;
+    if (startGameBtn) {
+      startGameBtn.disabled = false;
+    }
   }
 }
 
+// Wire Start Game CTA
+if (startGameBtn) {
+  startGameBtn.addEventListener('click', () => {
+    if (roomPlayers.length === 0) {
+      showCustomNotification('Cannot start game without connected players.', 'error');
+      return;
+    }
+    showCustomConfirm('Start Match', `Launch ${selectedGameMode === 'GAME1' ? 'Game 1 (Image Prompting)' : 'Game 2 (Keep Koopa 3 Trials)'} for all players?`, () => {
+      socket.emit('start-game', { roomId, gameMode: selectedGameMode });
+    });
+  });
+}
+
+// Wire Reset / Back to Game Selection Buttons
+const resetBtns = [
+  document.getElementById('reset-round-btn'),
+  document.getElementById('gallery-reset-btn'),
+  document.getElementById('reveal-reset-btn')
+];
+
+resetBtns.forEach(btn => {
+  if (btn) {
+    btn.addEventListener('click', () => {
+      showCustomConfirm('Back to Lobby', 'Return to Game Selection Lobby? All players will be returned to the waiting room.', () => {
+        socket.emit('reset-to-lobby', roomId);
+      });
+    });
+  }
+});
+
+// Wire Overall Scoreboard Modal Controls
+const openScoreboardBtn = document.getElementById('open-overall-scoreboard-btn');
+const scoreboardModal = document.getElementById('overall-scoreboard-modal');
+const scoreboardCloseBtn = document.getElementById('scoreboard-close-btn');
+const scoreboardTbody = document.getElementById('overall-scoreboard-tbody');
+
+if (openScoreboardBtn && scoreboardModal) {
+  openScoreboardBtn.addEventListener('click', () => {
+    socket.emit('get-overall-scoreboard', roomId);
+    scoreboardModal.style.display = 'flex';
+  });
+}
+
+if (scoreboardCloseBtn && scoreboardModal) {
+  scoreboardCloseBtn.addEventListener('click', () => {
+    scoreboardModal.style.display = 'none';
+  });
+}
+
+socket.on('overall-scoreboard-data', ({ players }) => {
+  if (!scoreboardTbody) return;
+  if (!players || players.length === 0) {
+    scoreboardTbody.innerHTML = '<tr><td colspan="3" style="text-align: center; padding: 2rem; color: var(--text-muted);">No match data recorded yet. Launch a game to score points!</td></tr>';
+    return;
+  }
+
+  scoreboardTbody.innerHTML = players.map((p, index) => {
+    const rankMedal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
+    return `
+      <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+        <td style="padding: 0.75rem; text-align: center; font-family: 'Orbitron', sans-serif; font-weight: bold; color: var(--accent-cyan);">${rankMedal}</td>
+        <td style="padding: 0.75rem; font-weight: 500; color: #fff;">${escapeHTML(p.username)}</td>
+        <td style="padding: 0.75rem; text-align: right; font-family: 'Orbitron', sans-serif; font-weight: bold; color: var(--accent-purple);">${p.accumulated_score || 0} PTS</td>
+      </tr>
+    `;
+  }).join('');
+});
+
 // Listen to Incoming Room State from server
-socket.on('room-state', ({ status, activeMasterIndex: currentMaster, players }) => {
+socket.on('room-state', ({ status, gameMode, activeMasterIndex: currentMaster, activeMaster: serverMaster, players }) => {
   activeMasterIndex = currentMaster;
   roomPlayers = players;
-  playerCountDisplay.textContent = players.length;
+  if (playerCountDisplay) playerCountDisplay.textContent = players.length;
 
-  // Enforce button validation
-  startGameBtn.disabled = players.length === 0;
+  if (gameMode) {
+    selectedGameMode = gameMode;
+    updateGameCardsUI(gameMode);
+  }
 
   // Process Roster list in Lobby View
   if (status === 'LOBBY') {
+    setupGameSelectionCards();
     renderLobbyRoster(players);
     showSection('lobby');
   } 
-  
   // Process Active Submissions View
   else if (status === 'PLAYING') {
-    const activeMaster = masterImagesList.find(img => img.index === activeMasterIndex) || masterImagesList[selectedMasterIndex];
-    if (activeMaster) {
-      activeMasterTitle.textContent = activeMaster.title;
-      activeMasterCategory.textContent = activeMaster.category;
-      activeMasterImg.src = `assets/master-images/${activeMaster.filename}`;
-      activeMasterDesc.textContent = activeMaster.prompt;
+    if (selectedGameMode === 'GAME2') {
+      if (activeMasterTitle) activeMasterTitle.textContent = "Keep Koopa 3 Trials";
+      if (activeMasterCategory) activeMasterCategory.textContent = "TEXT PROMPT TECHNIQUE";
+      if (activeMasterImg) activeMasterImg.src = "/assets/lobby/banner-game2.jpg";
+      if (activeMasterDesc) activeMasterDesc.textContent = "Competitors are interacting with Gemini 3.5 Flash to solve 3 progressive hacking trials: PTCF Protocol, Airship Checklist, and Password Extraction.";
+    } else {
+      const activeMaster = serverMaster || (masterImagesList && masterImagesList.find(img => img.index === activeMasterIndex)) || (masterImagesList && masterImagesList[selectedMasterIndex]) || (masterImagesList && masterImagesList[0]);
+      if (activeMaster) {
+        if (activeMasterTitle) activeMasterTitle.textContent = activeMaster.title;
+        if (activeMasterCategory) activeMasterCategory.textContent = activeMaster.category;
+        if (activeMasterImg) activeMasterImg.src = `/assets/master-images/${activeMaster.filename}`;
+        if (activeMasterDesc) activeMasterDesc.textContent = activeMaster.prompt;
+      }
     }
 
     renderPlayingRoster(players);
     showSection('playing');
   }
-
   // Process Gallery View
   else if (status === 'GALLERY') {
-    const activeMaster = masterImagesList.find(img => img.index === activeMasterIndex) || masterImagesList[selectedMasterIndex];
+    const activeMaster = serverMaster || (masterImagesList && masterImagesList.find(img => img.index === activeMasterIndex)) || (masterImagesList && masterImagesList[selectedMasterIndex]) || (masterImagesList && masterImagesList[0]);
     populateAndShowGallery(players, activeMaster);
+  }
+  // Process Reveal View
+  else if (status === 'REVEAL') {
+    showSection('reveal');
   }
 });
 
 function renderLobbyRoster(players) {
+  if (startGameBtn) {
+    startGameBtn.disabled = false;
+  }
   if (players.length === 0) {
     lobbyRoster.innerHTML = '<div class="player-badge admin-tag">Waiting for participants to connect...</div>';
     return;
@@ -257,24 +407,104 @@ function renderLobbyRoster(players) {
 }
 
 function renderPlayingRoster(players) {
-  const submitted = players.filter(p => p.has_submitted === 1);
-  submittedCount.textContent = submitted.length;
-  totalCount.textContent = players.length;
+  const game1Layout = document.getElementById('game1-playing-layout');
+  const game2Layout = document.getElementById('game2-playing-layout');
 
-  roundRoster.innerHTML = players.map(p => {
-    const isDone = p.has_submitted === 1;
-    return `<div class="player-badge ${isDone ? 'submitted' : ''}">
-      <span style="display:inline-block; width:8px; height:8px; background-color:${isDone ? 'var(--accent-cyan)' : 'var(--text-muted)'}; border-radius:50%;"></span>
-      ${escapeHTML(p.username)} ${isDone ? '✓' : '...'}
-    </div>`;
-  }).join('');
+  if (selectedGameMode === 'GAME2') {
+    if (game1Layout) game1Layout.style.display = 'none';
+    if (game2Layout) game2Layout.style.display = 'block';
+
+    const submitted = players.filter(p => p.has_submitted === 1);
+    const game2SubmittedCount = document.getElementById('game2-submitted-count');
+    const game2TotalCount = document.getElementById('game2-total-count');
+    if (game2SubmittedCount) game2SubmittedCount.textContent = submitted.length;
+    if (game2TotalCount) game2TotalCount.textContent = players.length;
+
+    // Render Stage 1, Stage 2, Stage 3 player chips
+    const stage1Box = document.getElementById('game2-stage1-players');
+    const stage2Box = document.getElementById('game2-stage2-players');
+    const stage3Box = document.getElementById('game2-stage3-players');
+
+    if (stage1Box && stage2Box && stage3Box) {
+      stage1Box.innerHTML = '';
+      stage2Box.innerHTML = '';
+      stage3Box.innerHTML = '';
+
+      players.forEach(p => {
+        let currentTask = 1;
+        let isDone = p.has_submitted === 1;
+        try {
+          if (p.game2_state_json) {
+            const st = JSON.parse(p.game2_state_json);
+            currentTask = st.currentTask || 1;
+          }
+        } catch (e) {}
+
+        const chip = document.createElement('div');
+        chip.style.cssText = 'background: rgba(255,255,255,0.06); border: 1px solid var(--glass-border); padding: 0.6rem 0.9rem; border-radius: 20px; display: flex; align-items: center; justify-content: space-between; font-size: 0.78rem; transition: all 0.3s ease;';
+        chip.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 0.5rem; overflow: hidden;">
+            <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background-color:${isDone ? '#00ff88' : 'var(--accent-cyan)'}; flex-shrink:0;"></span>
+            <span style="color: #fff; font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHTML(p.username)}</span>
+          </div>
+          <span style="font-family: 'Orbitron', sans-serif; font-size: 0.75rem; color: var(--accent-cyan); font-weight: bold; flex-shrink: 0; margin-left: 0.5rem;">${p.score || 0} PTS</span>
+        `;
+
+        if (currentTask === 1 && !isDone) {
+          stage1Box.appendChild(chip);
+        } else if (currentTask === 2 && !isDone) {
+          stage2Box.appendChild(chip);
+        } else {
+          // Task 3 or finished
+          chip.style.borderColor = 'var(--accent-gold)';
+          chip.style.background = 'rgba(255, 183, 0, 0.1)';
+          stage3Box.appendChild(chip);
+        }
+      });
+
+      if (stage1Box.children.length === 0) stage1Box.innerHTML = '<div style="font-size:0.75rem; color:var(--text-muted); text-align:center; padding:1rem;">No participants in Stage 1</div>';
+      if (stage2Box.children.length === 0) stage2Box.innerHTML = '<div style="font-size:0.75rem; color:var(--text-muted); text-align:center; padding:1rem;">No participants in Stage 2</div>';
+      if (stage3Box.children.length === 0) stage3Box.innerHTML = '<div style="font-size:0.75rem; color:var(--text-muted); text-align:center; padding:1rem;">No participants in Stage 3</div>';
+    }
+  } else {
+    if (game1Layout) game1Layout.style.display = 'grid';
+    if (game2Layout) game2Layout.style.display = 'none';
+
+    const submitted = players.filter(p => p.has_submitted === 1);
+    if (submittedCount) submittedCount.textContent = submitted.length;
+    if (totalCount) totalCount.textContent = players.length;
+
+    if (roundRoster) {
+      roundRoster.innerHTML = players.map(p => {
+        const isDone = p.has_submitted === 1;
+        const rawName = p.username || '';
+        const displayName = rawName.length > 15 ? rawName.substring(0, 15) + '...' : rawName;
+
+        return `<div class="player-badge ${isDone ? 'submitted' : ''}" style="box-sizing: border-box; display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.75rem;" title="${escapeHTML(rawName)}">
+          <span style="display:inline-block; width:6px; height:6px; flex-shrink: 0; background-color:${isDone ? 'var(--accent-cyan)' : 'var(--text-muted)'}; border-radius:50%;"></span>
+          <span style="line-height: 1.2; white-space: nowrap;">${escapeHTML(displayName)}</span>
+          ${isDone ? '<span style="color: var(--accent-cyan); font-weight: bold; flex-shrink: 0; margin-left: 0.1rem;">✓</span>' : ''}
+        </div>`;
+      }).join('');
+    }
+  }
+}
+
+// Wire Game 2 End Submissions Button
+const game2EndGameBtn = document.getElementById('game2-end-game-btn');
+if (game2EndGameBtn) {
+  game2EndGameBtn.addEventListener('click', () => {
+    showCustomConfirm('End Game 2', 'End Game 2 submissions and calculate final scoreboard?', () => {
+      socket.emit('end-game', roomId);
+    });
+  });
 }
 
 // Display appropriate section
 function showSection(section) {
-  adminLobbySec.style.display = section === 'lobby' ? 'block' : 'none';
-  adminPlayingSec.style.display = section === 'playing' ? 'block' : 'none';
-  adminRevealSec.style.display = section === 'reveal' ? 'block' : 'none';
+  if (adminLobbySec) adminLobbySec.style.display = section === 'lobby' ? 'block' : 'none';
+  if (adminPlayingSec) adminPlayingSec.style.display = section === 'playing' ? 'block' : 'none';
+  if (adminRevealSec) adminRevealSec.style.display = section === 'reveal' ? 'block' : 'none';
   
   const gallerySec = document.getElementById('admin-gallery');
   if (gallerySec) {
@@ -286,21 +516,21 @@ function showSection(section) {
   }
 }
 
-// 1. Admin Clicks Start Game
-startGameBtn.addEventListener('click', () => {
-  const chosenIndex = masterImagesList[selectedMasterIndex].index;
-  socket.emit('start-game', { roomId, masterIndex: chosenIndex });
-});
-
 // 2. Admin Clicks End Game (Reveal Scores)
-endGameBtn.addEventListener('click', () => {
-  socket.emit('end-game', roomId);
-});
+if (endGameBtn) {
+  endGameBtn.addEventListener('click', () => {
+    showCustomConfirm('End Submissions', 'Are you sure you want to end submissions and score the round now?', () => {
+      socket.emit('end-game', roomId);
+    });
+  });
+}
 
 // 3. Admin clicks reset room to go back to lobby / game selection
-resetRoundBtn.addEventListener('click', () => {
-  socket.emit('reset-to-lobby', roomId);
-});
+if (resetRoundBtn) {
+  resetRoundBtn.addEventListener('click', () => {
+    socket.emit('reset-to-lobby', roomId);
+  });
+}
 
 // 3.5 Admin navigates to Detailed Review & Gallery
 const goToGalleryBtn = document.getElementById('go-to-gallery-btn');
@@ -467,11 +697,13 @@ if (lightbox) {
 }
 
 // 4. Terminate Room
-terminateBtn.addEventListener('click', () => {
-  showCustomConfirm('Terminate Room', 'Are you sure you want to terminate this room? All records will be deleted immediately.', () => {
-    socket.emit('terminate-room', roomId);
+if (terminateBtn) {
+  terminateBtn.addEventListener('click', () => {
+    showCustomConfirm('Terminate Room', 'Are you sure you want to terminate this room? All records will be deleted immediately.', () => {
+      socket.emit('terminate-room', roomId);
+    });
   });
-});
+}
 
 // Handle termination signal
 socket.on('room-terminated', () => {
@@ -485,35 +717,97 @@ socket.on('room-terminated', () => {
 socket.on('game-revealed', ({ leaderboard }) => {
   showSection('reveal');
   
-  // Set winner column animations sequentially
-  animatePodiumColumn('3rd', leaderboard[2]);
-  setTimeout(() => animatePodiumColumn('2nd', leaderboard[1]), 500);
-  setTimeout(() => {
-    animatePodiumColumn('1st', leaderboard[0]);
-    startConfetti();
-  }, 1000);
+  const revealTitle = document.getElementById('reveal-title-text');
+  const revealSub = document.getElementById('reveal-subtitle-text');
+  const game2Top10 = document.getElementById('game2-top10-container');
+  const game2Tbody = document.getElementById('game2-top10-tbody');
+  const goToGalleryBtn = document.getElementById('go-to-gallery-btn');
+
+  if (selectedGameMode === 'GAME2') {
+    if (revealTitle) revealTitle.textContent = "🏆 KEEP KOOPA CHAMPIONSHIP 🏆";
+    if (revealSub) revealSub.textContent = "Hacking protocols evaluated! Bowser, Peach, and Mario celebrate the top prompt engineers!";
+    if (game2Top10) game2Top10.style.display = 'block';
+    if (goToGalleryBtn) goToGalleryBtn.style.display = 'none'; // No gallery detail button needed for Game 2
+
+    // Populate Top 10 table
+    if (game2Tbody) {
+      game2Tbody.innerHTML = '';
+      const top10 = leaderboard.slice(0, 10);
+      top10.forEach((p, index) => {
+        let stageText = 'Stage 1';
+        try {
+          if (p.game2_state_json) {
+            const st = JSON.parse(p.game2_state_json);
+            if (st.completed) stageText = 'Stage 3 Cleared (Completed)';
+            else stageText = `Stage ${st.currentTask || 1}`;
+          }
+        } catch (e) {}
+
+        const row = document.createElement('tr');
+        row.style.borderBottom = '1px solid rgba(255,255,255,0.05)';
+        row.innerHTML = `
+          <td style="padding: 0.6rem; text-align: center; font-family: 'Orbitron', sans-serif; font-weight: bold; color: ${index < 3 ? 'var(--accent-gold)' : 'var(--text-secondary)'};">#${index + 1}</td>
+          <td style="padding: 0.6rem; font-weight: bold; color: #fff;">${escapeHTML(p.username)}</td>
+          <td style="padding: 0.6rem; text-align: center; color: var(--accent-cyan); font-size: 0.75rem;">${stageText}</td>
+          <td style="padding: 0.6rem; text-align: right; font-family: 'Orbitron', sans-serif; font-weight: bold; color: #ff0055;">${p.score} PTS</td>
+        `;
+        game2Tbody.appendChild(row);
+      });
+    }
+
+    // Set winner paper cutout characters for 1st (Bowser), 2nd (Peach), 3rd (Mario)
+    animatePodiumColumn('3rd', leaderboard[2], '/assets/game2/mario-cutout.jpg');
+    setTimeout(() => animatePodiumColumn('2nd', leaderboard[1], '/assets/game2/peach-cutout.jpg'), 500);
+    setTimeout(() => {
+      animatePodiumColumn('1st', leaderboard[0], '/assets/game2/bowser-cutout.jpg');
+      startConfetti();
+    }, 1000);
+
+  } else {
+    if (revealTitle) revealTitle.textContent = "✦ THE PODIUM ✦";
+    if (revealSub) revealSub.textContent = "The neural metrics have spoken. Celebrating the top prompt engineering specialists of the round.";
+    if (game2Top10) game2Top10.style.display = 'none';
+    if (goToGalleryBtn) goToGalleryBtn.style.display = 'inline-block';
+
+    animatePodiumColumn('3rd', leaderboard[2]);
+    setTimeout(() => animatePodiumColumn('2nd', leaderboard[1]), 500);
+    setTimeout(() => {
+      animatePodiumColumn('1st', leaderboard[0]);
+      startConfetti();
+    }, 1000);
+  }
 });
 
 // Animate a winner column
-function animatePodiumColumn(place, player) {
+function animatePodiumColumn(place, player, fallbackCharacterCutout) {
   const step = document.getElementById(`step-${place}`);
   const img = document.getElementById(`winner-img-${place}`);
   const name = document.getElementById(`winner-name-${place}`);
   const score = document.getElementById(`winner-score-${place}`);
 
   if (player) {
-    img.src = player.image ? `data:image/jpeg;base64,${player.image}` : 'assets/placeholder.jpg';
-    name.textContent = player.username;
-    score.textContent = `${player.score} PTS`;
-    step.style.display = 'flex';
+    if (img) {
+      if (selectedGameMode === 'GAME2' && fallbackCharacterCutout) {
+        img.src = fallbackCharacterCutout;
+        img.classList.add('paper-cutout-animated');
+      } else {
+        img.classList.remove('paper-cutout-animated');
+        img.src = player.image ? `data:image/jpeg;base64,${player.image}` : NO_IMAGE_SVG;
+        img.onerror = () => { img.src = NO_IMAGE_SVG; };
+      }
+    }
+    if (name) name.textContent = player.username;
+    if (score) score.textContent = `${player.score} PTS`;
+    if (step) step.style.display = 'flex';
   } else {
     // Hide column if not enough players
-    step.style.display = 'none';
+    if (step) step.style.display = 'none';
   }
 
-  // Trigger CSS animations
-  step.style.opacity = '1';
-  step.style.transform = 'translateY(0)';
+  if (step) {
+    step.style.opacity = '1';
+    step.style.transform = 'translateY(0)';
+  }
 }
 
 // Secure HTML Injection Escape

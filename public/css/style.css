@@ -791,3 +791,34 @@ select.input-control option {
     print-color-adjust: exact !important;
   }
 }
+
+/* Continuous Ambient Background Breathing Animation for Game 2 */
+@keyframes ambientBreathing {
+  0% {
+    transform: scale(1) translateY(0);
+    filter: brightness(0.85) contrast(1.1);
+  }
+  50% {
+    transform: scale(1.08) translateY(-8px);
+    filter: brightness(1.05) contrast(1.25) hue-rotate(8deg);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+    filter: brightness(0.85) contrast(1.1);
+  }
+}
+
+/* Paper Cutout Bobbing & Float Animation for Leaderboard Podium */
+.paper-cutout-animated {
+  animation: paperBobbing 3.5s ease-in-out infinite;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6), 0 0 15px rgba(255, 0, 85, 0.4);
+}
+
+@keyframes paperBobbing {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translateY(-10px) rotate(3deg) scale(1.04);
+  }
+}

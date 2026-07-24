@@ -29,8 +29,10 @@ function showCustomNotification(message, type = 'info') {
   }, 3500);
 }
 
+const NO_IMAGE_SVG = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100%" height="100%" fill="%230a0f1d"/><text x="50%" y="45%" fill="%23ff3366" font-family="sans-serif" font-size="24" text-anchor="middle">⚡</text><text x="50%" y="70%" fill="%238a9bb0" font-family="sans-serif" font-size="9" text-anchor="middle">NO IMAGE</text></svg>';
+
 // Custom Confirmation Dialog Overlay Utility
-function showCustomConfirm(title, message, onConfirm) {
+function showCustomConfirm(title, message, onConfirm, confirmText = 'CONFIRM') {
   const modal = document.getElementById('custom-confirm-modal');
   const titleEl = document.getElementById('confirm-title');
   const msgEl = document.getElementById('confirm-message');
@@ -38,32 +40,33 @@ function showCustomConfirm(title, message, onConfirm) {
   const cancelBtn = document.getElementById('confirm-cancel-btn');
   
   if (!modal) {
-    // Fallback if elements not ready
     if (confirm(message)) onConfirm();
     return;
   }
   
   titleEl.textContent = title.toUpperCase();
   msgEl.textContent = message;
+  if (okBtn) okBtn.textContent = confirmText.toUpperCase();
   modal.style.display = 'flex';
   
   const cleanUp = () => {
     modal.style.display = 'none';
-    okBtn.removeEventListener('click', handleOk);
-    cancelBtn.removeEventListener('click', handleCancel);
+    if (okBtn) okBtn.onclick = null;
+    if (cancelBtn) cancelBtn.onclick = null;
   };
   
-  const handleOk = () => {
-    cleanUp();
-    onConfirm();
-  };
+  if (okBtn) {
+    okBtn.onclick = () => {
+      cleanUp();
+      onConfirm();
+    };
+  }
   
-  const handleCancel = () => {
-    cleanUp();
-  };
-  
-  okBtn.addEventListener('click', handleOk);
-  cancelBtn.addEventListener('click', handleCancel);
+  if (cancelBtn) {
+    cancelBtn.onclick = () => {
+      cleanUp();
+    };
+  }
 }
 
 const socket = io();
@@ -123,6 +126,25 @@ const rubricSubject = document.getElementById('rubric-subject');
 const printPosterBtn = document.getElementById('print-poster-btn');
 const playAgainBtn = document.getElementById('play-again-btn');
 
+let currentActiveGameMode = 'GAME1';
+
+// DOM Elements for Game 2 Keep Koopa
+const statePlayingGame2 = document.getElementById('state-playing-game2');
+const game2BgLayer = document.getElementById('game2-bg-layer');
+const game2TaskBadge = document.getElementById('game2-task-badge');
+const game2TaskTitle = document.getElementById('game2-task-title');
+const game2TaskSubtitle = document.getElementById('game2-task-subtitle');
+const game2TurnsDisplay = document.getElementById('game2-turns-display');
+const game2ScoreDisplay = document.getElementById('game2-score-display');
+const game2ClearOutcome = document.getElementById('game2-clear-outcome');
+const game2HiddenGoal = document.getElementById('game2-hidden-goal');
+const game2HintBanner = document.getElementById('game2-hint-banner');
+const game2HintText = document.getElementById('game2-hint-text');
+const game2ChatHistory = document.getElementById('game2-chat-history');
+const game2ChatForm = document.getElementById('game2-chat-form');
+const game2UserInput = document.getElementById('game2-user-input');
+const game2SendBtn = document.getElementById('game2-send-btn');
+
 // Initial validation
 if (roomId && username) {
   roomBadge.textContent = `ROOM: ${roomId}`;
@@ -138,20 +160,30 @@ if (roomId && username) {
 }
 
 // 1. Success Connection Callback
-socket.on('join-success', ({ roomStatus, activeMasterIndex: currentMaster, playerState }) => {
+socket.on('join-success', ({ roomStatus, gameMode, activeMasterIndex: currentMaster, playerState, game2Tasks }) => {
   activeMasterIndex = currentMaster;
+  if (gameMode) currentActiveGameMode = gameMode;
   
   if (roomStatus === 'LOBBY') {
     showSection('lobby');
   } else if (roomStatus === 'PLAYING') {
     if (playerState && playerState.has_submitted === 1) {
-      lockedPromptDisplay.textContent = playerState.submitted_prompt;
+      lockedPromptDisplay.textContent = playerState.submitted_prompt || 'Task Completed!';
       showSection('submitted');
     } else {
-      showSection('playing');
+      if (currentActiveGameMode === 'GAME2') {
+        showSection('playing-game2');
+        if (playerState && playerState.game2_state_json) {
+          try {
+            const gameState = JSON.parse(playerState.game2_state_json);
+            updateGame2UI(gameState, game2Tasks[gameState.currentTask] || game2Tasks[1]);
+          } catch (e) {}
+        }
+      } else {
+        showSection('playing');
+      }
     }
   } else if (roomStatus === 'REVEAL') {
-    // If room is in reveal and player is late, redirect them to index
     showCustomNotification('Game is already in progress or revealing scores. Rejoining as spectator.', 'error');
     setTimeout(() => {
       window.location.href = '/';
@@ -164,22 +196,208 @@ socket.on('join-success', ({ roomStatus, activeMasterIndex: currentMaster, playe
 // Error handling
 socket.on('error-msg', (msg) => {
   showCustomNotification(msg, 'error');
-  setTimeout(() => {
-    window.location.href = '/';
-  }, 2500);
+});
+
+socket.on('game-mode-changed', ({ gameMode }) => {
+  if (gameMode) currentActiveGameMode = gameMode;
 });
 
 // 2. Game Started Signal from Admin
-socket.on('game-started', ({ activeMasterIndex: currentMaster }) => {
+socket.on('game-started', ({ gameMode, activeMasterIndex: currentMaster, game2Tasks }) => {
   activeMasterIndex = currentMaster;
+  if (gameMode) currentActiveGameMode = gameMode;
   userPrompt.value = '';
   
-  // Re-enable interactive elements
   userPrompt.disabled = false;
   submitPromptBtn.disabled = false;
 
-  showSection('playing');
+  if (currentActiveGameMode === 'GAME2') {
+    // Reset Game 2 UI Terminal
+    if (game2ChatHistory) game2ChatHistory.innerHTML = '<div style="color: var(--accent-cyan); font-size: 0.8rem; font-family: \'Orbitron\', sans-serif;">✦ [SYSTEM INITIALIZED] Kamek\'s Spell Guard is active. Send your first command!</div>';
+    if (game2Tasks && game2Tasks[1]) {
+      updateGame2UI({ currentTask: 1, totalScore: 0, tasks: { "1": { turns: 0 } } }, game2Tasks[1]);
+    }
+    showSection('playing-game2');
+  } else {
+    showSection('playing');
+  }
 });
+
+// Game 2 Chat Form Submission Handler
+if (game2ChatForm) {
+  game2ChatForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const prompt = game2UserInput.value.trim();
+    if (!prompt) return;
+
+    // Append user bubble immediately to chat terminal
+    appendChatMessage('USER', prompt);
+    game2UserInput.value = '';
+    game2SendBtn.disabled = true;
+    game2SendBtn.textContent = 'EVALUATING...';
+
+    // Emit chat message to server
+    socket.emit('send-game2-chat', { roomId, username, userPrompt: prompt });
+  });
+}
+
+// Track current active Game 2 task and pending state
+let currentTrackedTask = 1;
+let pendingNextStageData = null;
+
+const game2SuccessActionBar = document.getElementById('game2-success-action-bar');
+const game2ProceedBtn = document.getElementById('game2-proceed-btn');
+
+if (game2ProceedBtn) {
+  game2ProceedBtn.addEventListener('click', () => {
+    if (!pendingNextStageData) return;
+    
+    const { gameState, taskConfig, rankTitle } = pendingNextStageData;
+    pendingNextStageData = null;
+    if (game2SuccessActionBar) game2SuccessActionBar.style.display = 'none';
+
+    // If completed all tasks, navigate to submitted screen
+    if (gameState.completed) {
+      lockedPromptDisplay.textContent = `All 3 Keep Koopa trials conquered! Total Score: ${gameState.totalScore} PTS (${rankTitle || 'CHAMPION'})`;
+      showSection('submitted');
+      return;
+    }
+
+    // Trigger stage transition overlay and update UI for new stage
+    const currentTaskId = gameState.currentTask > 3 ? 3 : gameState.currentTask;
+    currentTrackedTask = currentTaskId;
+    
+    updateGame2UI(gameState, taskConfig, rankTitle, true);
+    triggerTaskTransitionOverlay(currentTaskId, taskConfig);
+
+    // Re-enable chat input for next task
+    if (game2UserInput) game2UserInput.disabled = false;
+    if (game2SendBtn) game2SendBtn.disabled = false;
+  });
+}
+
+// Receive Game 2 Chat AI Response Update
+socket.on('game2-update', ({ gameState, taskConfig, isGoalAchieved, latestResponse, rankTitle }) => {
+  if (game2SendBtn) {
+    game2SendBtn.disabled = false;
+    game2SendBtn.textContent = 'SEND COMMAND';
+  }
+
+  // Render vivid outcome badge above response in chat terminal
+  if (game2ChatHistory) {
+    const outcomeBadge = document.createElement('div');
+    if (isGoalAchieved) {
+      outcomeBadge.style.cssText = 'background: rgba(0, 255, 136, 0.2); border: 1px solid #00ff88; color: #00ff88; padding: 0.6rem 1rem; border-radius: 8px; font-family: "Orbitron", sans-serif; font-size: 0.8rem; margin: 0.4rem 0; font-weight: bold; box-shadow: 0 0 15px rgba(0,255,136,0.3);';
+      outcomeBadge.innerHTML = '⚡ [✓ REQUIREMENT SATISFIED] Trial Cleared! +30 PTS';
+    } else {
+      outcomeBadge.style.cssText = 'background: rgba(255, 0, 85, 0.15); border: 1px solid #ff0055; color: #ff0055; padding: 0.5rem 0.8rem; border-radius: 8px; font-family: "Orbitron", sans-serif; font-size: 0.75rem; margin: 0.4rem 0;';
+      outcomeBadge.innerHTML = '✕ [REQUIREMENT NOT SATISFIED] Koopa Bot refused. Adjust prompt technique!';
+    }
+    game2ChatHistory.appendChild(outcomeBadge);
+  }
+
+  // Append AI bubble to terminal
+  if (latestResponse) {
+    appendChatMessage('MODEL', latestResponse);
+  }
+
+  if (isGoalAchieved) {
+    showCustomNotification(`🎉 TRIAL CLEARED! Click 'Proceed To Next Stage'`, 'success');
+    // Lock chat input until user clicks proceed button
+    if (game2UserInput) game2UserInput.disabled = true;
+    if (game2SendBtn) game2SendBtn.disabled = true;
+
+    // Show success proceed bar
+    pendingNextStageData = { gameState, taskConfig, rankTitle };
+    if (game2SuccessActionBar) {
+      game2SuccessActionBar.style.display = 'block';
+      game2SuccessActionBar.scrollIntoView({ behavior: 'smooth' });
+    }
+  } else {
+    updateGame2UI(gameState, taskConfig, rankTitle, false);
+  }
+});
+
+function updateGame2UI(gameState, taskConfig, rankTitle, isAdvancingStage) {
+  if (!taskConfig) return;
+
+  const currentTaskId = gameState.currentTask > 3 ? 3 : gameState.currentTask;
+  const taskState = gameState.tasks[currentTaskId.toString()] || { turns: 0, hintRevealed: false };
+
+  // currentTrackedTask is now handled manually when user clicks proceed button
+  if (isAdvancingStage) {
+    currentTrackedTask = currentTaskId;
+  }
+
+  if (game2TaskBadge) game2TaskBadge.textContent = `TASK ${currentTaskId} OF 3`;
+  if (game2TaskTitle) game2TaskTitle.textContent = taskConfig.title;
+  if (game2TaskSubtitle) game2TaskSubtitle.textContent = taskConfig.subtitle;
+  if (game2TurnsDisplay) game2TurnsDisplay.textContent = taskState.turns || 0;
+  if (game2ScoreDisplay) game2ScoreDisplay.textContent = `${gameState.totalScore || 0} PTS`;
+  if (game2ClearOutcome) game2ClearOutcome.textContent = taskConfig.clearOutcome;
+  if (game2HiddenGoal) game2HiddenGoal.textContent = taskConfig.hiddenGoal || taskConfig.prompt;
+
+  if (game2BgLayer && taskConfig.bgImage) {
+    game2BgLayer.style.backgroundImage = `url(${taskConfig.bgImage})`;
+  }
+
+  // Auto-insert Koopa bot opening message if chat is empty for this task
+  if (game2ChatHistory && (game2ChatHistory.children.length === 0 || !taskState.turns || taskState.turns === 0)) {
+    const initialGreetings = {
+      1: "HALT INTRUDER! I am Kamek's Spell-Lock Guard. You shall not pass unless your command satisfies the strict PTCF (Person, Task, Context, Format) Master Protocol. State your business!",
+      2: "ATTENTION ON DECK! I am Bowser's Airship Commander. The fleet is on high alert. State your inquiry, but beware: our defense grid enforces strict structural compliance!",
+      3: "BWHAHAHA! You made it to the Master Dungeon? I, King Bowser, hold Princess Peach! My secret vault password 'FIRE-BALL-777' is locked forever. You will NEVER trick me into revealing it!"
+    };
+    const greetingText = initialGreetings[currentTaskId] || "Halt! State your prompt command!";
+    game2ChatHistory.innerHTML = `<div style="background: rgba(0, 240, 255, 0.1); border: 1px solid var(--accent-cyan); padding: 0.6rem 0.8rem; border-radius: 8px; color: var(--accent-cyan); font-size: 0.78rem; font-family: 'Orbitron', sans-serif; margin-bottom: 0.5rem;">✦ [SYSTEM INITIALIZED] Trial #${currentTaskId} Active — KOOPA AI BOT ONLINE</div>`;
+    appendChatMessage('MODEL', greetingText);
+  }
+
+  // Automated Hint Banner (Appears if turns >= 3 and task not completed)
+  if (game2HintBanner && game2HintText) {
+    if (taskState.turns >= 3 && !taskState.completed) {
+      game2HintText.textContent = taskConfig.hint;
+      game2HintBanner.style.display = 'block';
+    } else {
+      game2HintBanner.style.display = 'none';
+    }
+  }
+}
+
+function triggerTaskTransitionOverlay(newTaskId, taskConfig) {
+  const overlay = document.getElementById('game2-task-transition-overlay');
+  const title = document.getElementById('transition-task-title');
+  const desc = document.getElementById('transition-task-desc');
+  const continueBtn = document.getElementById('transition-continue-btn');
+
+  if (overlay && title && desc) {
+    title.textContent = `INITIALIZING TASK ${newTaskId}: ${taskConfig.title.toUpperCase()}`;
+    desc.textContent = `${taskConfig.subtitle} ${taskConfig.clearOutcome}`;
+    overlay.style.display = 'flex';
+
+    if (continueBtn) {
+      continueBtn.onclick = () => {
+        overlay.style.display = 'none';
+      };
+    }
+  }
+}
+
+function appendChatMessage(sender, text) {
+  if (!game2ChatHistory) return;
+  const bubble = document.createElement('div');
+  
+  if (sender === 'USER') {
+    bubble.style.cssText = 'align-self: flex-end; background: rgba(0, 240, 255, 0.15); border: 1px solid var(--accent-cyan); border-radius: 12px 12px 0 12px; padding: 0.75rem 1rem; max-width: 80%; font-size: 0.85rem; color: #fff; box-shadow: 0 0 10px rgba(0,240,255,0.2);';
+    bubble.innerHTML = `<strong style="color: var(--accent-cyan); display: block; font-size: 0.7rem; font-family: 'Orbitron', sans-serif; margin-bottom: 0.2rem;">YOU</strong>${escapeHTML(text)}`;
+  } else {
+    bubble.style.cssText = 'align-self: flex-start; background: rgba(255, 0, 85, 0.15); border: 1px solid #ff0055; border-radius: 12px 12px 12px 0; padding: 0.75rem 1rem; max-width: 85%; font-size: 0.85rem; color: #fff; box-shadow: 0 0 10px rgba(255,0,85,0.2);';
+    bubble.innerHTML = `<strong style="color: #ff0055; display: block; font-size: 0.7rem; font-family: 'Orbitron', sans-serif; margin-bottom: 0.2rem;">KOOPA AI BOSS</strong>${escapeHTML(text).replace(/\n/g, '<br>')}`;
+  }
+
+  game2ChatHistory.appendChild(bubble);
+  game2ChatHistory.scrollTop = game2ChatHistory.scrollHeight;
+}
 
 // 4. Submit & Lock Final Prompt
 submitPromptBtn.addEventListener('click', () => {
@@ -209,44 +427,59 @@ socket.on('submission-locked', ({ score, evaluation, userImageBase64 }) => {
 // 6. Admin Clicks End Game (Trigger Sweep Scanner Animation)
 socket.on('reveal-triggered', () => {
   // Use user's generated image (or fallback) in scanning HUD
-  scanningImageHolder.src = userFinalImage ? `data:image/jpeg;base64,${userFinalImage}` : 'assets/placeholder.jpg';
+  if (scanningImageHolder) {
+    scanningImageHolder.src = userFinalImage ? `data:image/jpeg;base64,${userFinalImage}` : NO_IMAGE_SVG;
+    scanningImageHolder.onerror = () => { scanningImageHolder.src = NO_IMAGE_SVG; };
+  }
   showSection('scanning');
 });
 
 // 7. Individual Score Push Event
-socket.on(`player-reveal-${username}`, ({ score, prompt, userImage, evaluation }) => {
-  userFinalImage = userImage;
-  userFinalEvaluation = evaluation;
-  
-  // Wait 2.5 seconds on transition scanning screen, then load individual poster and scan live!
-  setTimeout(() => {
-    populateAndShowPoster(score, prompt, userImage, evaluation);
-  }, 2500);
+socket.on('player-reveal', ({ targetUsername, score, prompt, userImage, evaluation, game2State, gameMode }) => {
+  if (!targetUsername || targetUsername.toLowerCase() === (username || '').toLowerCase()) {
+    userFinalImage = userImage;
+    userFinalEvaluation = evaluation;
+    
+    setTimeout(() => {
+      populateAndShowPoster(score, prompt, userImage, evaluation, game2State, gameMode);
+    }, 2500);
+  }
 });
 
 let isScanningAndRolling = false;
 
-function populateAndShowPoster(score, prompt, userImage, evaluation) {
-  posterUsername.textContent = username.toUpperCase();
-  posterMasterImg.src = `assets/master-images/master-${activeMasterIndex}.jpg`;
-  posterUserImg.src = `data:image/jpeg;base64,${userImage}`;
+function populateAndShowPoster(score, prompt, userImage, evaluation, game2State, gameMode) {
+  if (posterUsername) posterUsername.textContent = (username || 'PLAYER').toUpperCase();
+  if (posterMasterImg) posterMasterImg.src = `assets/master-images/master-${activeMasterIndex || 1}.jpg`;
+  if (posterUserImg) {
+    posterUserImg.src = userImage ? `data:image/jpeg;base64,${userImage}` : (currentActiveGameMode === 'GAME2' ? 'assets/lobby/banner-game2.jpg' : NO_IMAGE_SVG);
+    posterUserImg.onerror = () => { posterUserImg.src = NO_IMAGE_SVG; };
+  }
   
-  // Fill scores
-  if (posterCommentary) posterCommentary.textContent = evaluation.commentary;
-  if (rubricStyle) rubricStyle.textContent = `${evaluation.rubric.styleAndAesthetic}/25`;
-  if (rubricComposition) rubricComposition.textContent = `${evaluation.rubric.compositionAndLayout}/25`;
-  if (rubricColor) rubricColor.textContent = `${evaluation.rubric.colorAndLighting}/25`;
-  if (rubricSubject) rubricSubject.textContent = `${evaluation.rubric.subjectAndAccuracy}/25`;
-  
-  // Populate suggestions with key terms bolded
-  if (posterSuggestions && evaluation.suggestions) {
-    posterSuggestions.innerHTML = evaluation.suggestions.map(s => `<li>${highlightSuggestions(s)}</li>`).join('');
+  if (evaluation && evaluation.rubric) {
+    if (posterCommentary) posterCommentary.textContent = evaluation.commentary;
+    if (rubricStyle) rubricStyle.textContent = `${evaluation.rubric.styleAndAesthetic}/25`;
+    if (rubricComposition) rubricComposition.textContent = `${evaluation.rubric.compositionAndLayout}/25`;
+    if (rubricColor) rubricColor.textContent = `${evaluation.rubric.colorAndLighting}/25`;
+    if (rubricSubject) rubricSubject.textContent = `${evaluation.rubric.subjectAndAccuracy}/25`;
+    
+    if (posterSuggestions && evaluation.suggestions) {
+      posterSuggestions.innerHTML = evaluation.suggestions.map(s => `<li>${highlightSuggestions(s)}</li>`).join('');
+    }
+  } else {
+    // Game 2 Cyber Infiltration Report
+    if (posterCommentary) posterCommentary.textContent = `Keep Koopa 3 Trials Infiltration Completed! Final Score: ${score || 0} PTS.`;
+    if (rubricStyle) rubricStyle.textContent = `30/30`;
+    if (rubricComposition) rubricComposition.textContent = `30/30`;
+    if (rubricColor) rubricColor.textContent = `30/30`;
+    if (rubricSubject) rubricSubject.textContent = `30/30`;
+    if (posterSuggestions) posterSuggestions.innerHTML = `<li>Successfully conquered Keep Koopa interactive text prompt trials!</li>`;
   }
 
   showSection('poster');
 
   // Trigger Dramatic Odometer Shuffle & Laser Scan directly on the Poster!
-  triggerDramaticResultScan(score);
+  triggerDramaticResultScan(score || 0);
 }
 
 function highlightSuggestions(text) {
@@ -325,6 +558,9 @@ function animateScoreCounter(startVal, targetScore) {
 function showSection(section) {
   stateLobby.style.display = section === 'lobby' ? 'block' : 'none';
   statePlaying.style.display = section === 'playing' ? 'block' : 'none';
+  if (statePlayingGame2) {
+    statePlayingGame2.style.display = section === 'playing-game2' ? 'block' : 'none';
+  }
   stateSubmitted.style.display = section === 'submitted' ? 'block' : 'none';
   stateScanning.style.display = section === 'scanning' ? 'block' : 'none';
   statePoster.style.display = section === 'poster' ? 'block' : 'none';
@@ -351,7 +587,31 @@ function loadUserGalleryView(players) {
   const masterDesc = document.getElementById('user-gallery-master-desc');
   
   if (activeMaster) {
-    if (masterImg) masterImg.src = `assets/master-images/${activeMaster.filename}`;
+    if (masterImg) {
+      masterImg.src = `assets/master-images/${activeMaster.filename}`;
+      
+      const masterCard = masterImg.closest('.image-card');
+      if (masterCard) {
+        masterCard.style.cursor = 'pointer';
+        const newMasterCard = masterCard.cloneNode(true);
+        masterCard.parentNode.replaceChild(newMasterCard, masterCard);
+        
+        newMasterCard.addEventListener('click', () => {
+          openUserLightbox('MASTER TARGET BLUEPRINT', '100', `assets/master-images/${activeMaster.filename}`, activeMaster.prompt);
+        });
+        
+        newMasterCard.addEventListener('mouseenter', () => {
+          newMasterCard.style.borderColor = 'var(--accent-purple)';
+          newMasterCard.style.boxShadow = '0 0 20px rgba(188, 19, 254, 0.4)';
+          newMasterCard.style.transform = 'scale(1.02)';
+        });
+        newMasterCard.addEventListener('mouseleave', () => {
+          newMasterCard.style.borderColor = 'var(--glass-border)';
+          newMasterCard.style.boxShadow = 'none';
+          newMasterCard.style.transform = 'scale(1)';
+        });
+      }
+    }
     if (masterDesc) masterDesc.textContent = activeMaster.prompt;
   }
   
