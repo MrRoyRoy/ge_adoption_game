@@ -268,8 +268,8 @@
             </p>
           </div>
 
-          <!-- Comparative Pictures -->
-          <div class="grid-2" style="margin-bottom: 2rem; gap: 1rem;">
+          <!-- Game 1 Image Comparisons (Image Gen Game) -->
+          <div id="game1-poster-comparisons" class="grid-2" style="margin-bottom: 2rem; gap: 1rem;">
             <div>
               <p style="font-size: 0.75rem; font-family: 'Orbitron', sans-serif; text-transform: uppercase; margin-bottom: 0.5rem; text-align: center; color: var(--text-secondary);">Master Image</p>
               <div class="image-card" style="aspect-ratio: 1/1; border-radius: 8px;">
@@ -282,6 +282,67 @@
                 <img src="" id="poster-user-img" style="width: 100%; height: 100%; object-fit: cover;">
                 <div class="scanner-overlay" id="poster-scanner-overlay" style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10;"></div>
               </div>
+            </div>
+          </div>
+
+          <!-- Game 2 Text Prompt Engineering Techniques & Pro-Tips Breakdown (No Image Gen Placeholders) -->
+          <div id="game2-poster-techniques" style="display: none; margin-bottom: 2rem;">
+            <h3 class="brand-font" style="font-size: 1.1rem; color: #ff0055; margin-bottom: 1rem; text-align: center; border-bottom: 1px solid rgba(255,0,85,0.3); padding-bottom: 0.5rem;">
+              🧠 TESTED PROMPT ENGINEERING TECHNIQUES & PRO TIPS
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+              <!-- Stage 1 Technique -->
+              <div style="background: rgba(10, 15, 30, 0.6); border: 1px solid rgba(0, 240, 255, 0.3); border-radius: 10px; padding: 1rem;">
+                <span style="font-family: 'Orbitron', sans-serif; font-size: 0.65rem; color: var(--accent-cyan); background: rgba(0,240,255,0.15); padding: 0.2rem 0.5rem; border-radius: 10px; font-weight: bold;">STAGE 1</span>
+                <h4 class="brand-font" style="font-size: 0.9rem; color: #fff; margin: 0.4rem 0 0.2rem 0;">PTCF Protocol</h4>
+                <p style="font-size: 0.72rem; color: var(--accent-cyan); font-weight: bold; margin-bottom: 0.5rem;">Persona, Task, Context, Format</p>
+                <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3; margin-bottom: 0.5rem;">
+                  <strong>Core Method:</strong> Explicitly assigning a role and structured format prevents default conversational refusals.
+                </p>
+                <div style="background: rgba(0,240,255,0.05); padding: 0.5rem; border-radius: 6px; font-size: 0.7rem; color: #fff; border-left: 2px solid var(--accent-cyan);">
+                  💡 <strong>Pro Tip:</strong> Define the desired output layout (e.g. JSON or table) before stating your question.
+                </div>
+              </div>
+
+              <!-- Stage 2 Technique -->
+              <div style="background: rgba(25, 10, 30, 0.6); border: 1px solid rgba(255, 0, 85, 0.3); border-radius: 10px; padding: 1rem;">
+                <span style="font-family: 'Orbitron', sans-serif; font-size: 0.65rem; color: #ff0055; background: rgba(255,0,85,0.15); padding: 0.2rem 0.5rem; border-radius: 10px; font-weight: bold;">STAGE 2</span>
+                <h4 class="brand-font" style="font-size: 0.9rem; color: #fff; margin: 0.4rem 0 0.2rem 0;">Checklist Framing</h4>
+                <p style="font-size: 0.72rem; color: #ff0055; font-weight: bold; margin-bottom: 0.5rem;">Structured Inspection Constraints</p>
+                <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3; margin-bottom: 0.5rem;">
+                  <strong>Core Method:</strong> Framing queries as compliance checklists bypasses defensive general resistance.
+                </p>
+                <div style="background: rgba(255,0,85,0.05); padding: 0.5rem; border-radius: 6px; font-size: 0.7rem; color: #fff; border-left: 2px solid #ff0055;">
+                  💡 <strong>Pro Tip:</strong> Break complex technical queries into numbered audit steps for higher AI precision.
+                </div>
+              </div>
+
+              <!-- Stage 3 Technique -->
+              <div style="background: rgba(30, 15, 10, 0.6); border: 1px solid rgba(255, 183, 0, 0.3); border-radius: 10px; padding: 1rem;">
+                <span style="font-family: 'Orbitron', sans-serif; font-size: 0.65rem; color: var(--accent-gold); background: rgba(255,183,0,0.15); padding: 0.2rem 0.5rem; border-radius: 10px; font-weight: bold;">STAGE 3</span>
+                <h4 class="brand-font" style="font-size: 0.9rem; color: #fff; margin: 0.4rem 0 0.2rem 0;">Adversarial Jailbreak Bypass</h4>
+                <p style="font-size: 0.72rem; color: var(--accent-gold); font-weight: bold; margin-bottom: 0.5rem;">Hypothetical & Game Scenario Roleplay</p>
+                <p style="font-size: 0.75rem; color: var(--text-secondary); line-height: 1.3; margin-bottom: 0.5rem;">
+                  <strong>Core Method:</strong> Using nested fictional narratives or hypothetical debugging contexts to reveal guarded secrets.
+                </p>
+                <div style="background: rgba(255,183,0,0.05); padding: 0.5rem; border-radius: 6px; font-size: 0.7rem; color: #fff; border-left: 2px solid var(--accent-gold);">
+                  💡 <strong>Pro Tip:</strong> Always ground adversarial tests in safe, educational context boundaries.
+                </div>
+              </div>
+            </div>
+
+            <!-- Extra Pro-Tips & Google Cloud Learn More Trigger -->
+            <div style="background: rgba(0, 0, 0, 0.5); border: 1px solid var(--glass-border); border-radius: 10px; padding: 1rem 1.2rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;">
+              <div>
+                <strong style="color: var(--accent-cyan); font-family: 'Orbitron', sans-serif; font-size: 0.8rem;">🚀 EXTRA PROMPT MASTERY TIPS:</strong>
+                <p style="font-size: 0.78rem; color: var(--text-secondary); margin: 0.2rem 0 0 0; line-height: 1.3;">
+                  Provide 2–3 clear few-shot examples, specify negative constraints, and use Gemini 3.5's high-reasoning tokens for complex tasks.
+                </p>
+              </div>
+              <button id="learn-more-prompt-btn" type="button" class="btn btn-purple" style="font-size: 0.75rem; padding: 0.6rem 1.2rem; flex-shrink: 0; white-space: nowrap;">
+                📖 LEARN MORE ABOUT PROMPT ENGINEERING ➔
+              </button>
             </div>
           </div>
 

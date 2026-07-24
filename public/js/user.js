@@ -450,35 +450,59 @@ let isScanningAndRolling = false;
 
 function populateAndShowPoster(score, prompt, userImage, evaluation, game2State, gameMode) {
   if (posterUsername) posterUsername.textContent = (username || 'PLAYER').toUpperCase();
-  if (posterMasterImg) posterMasterImg.src = `assets/master-images/master-${activeMasterIndex || 1}.jpg`;
-  if (posterUserImg) {
-    posterUserImg.src = userImage ? `data:image/jpeg;base64,${userImage}` : (currentActiveGameMode === 'GAME2' ? 'assets/lobby/banner-game2.jpg' : NO_IMAGE_SVG);
-    posterUserImg.onerror = () => { posterUserImg.src = NO_IMAGE_SVG; };
-  }
-  
-  if (evaluation && evaluation.rubric) {
-    if (posterCommentary) posterCommentary.textContent = evaluation.commentary;
-    if (rubricStyle) rubricStyle.textContent = `${evaluation.rubric.styleAndAesthetic}/25`;
-    if (rubricComposition) rubricComposition.textContent = `${evaluation.rubric.compositionAndLayout}/25`;
-    if (rubricColor) rubricColor.textContent = `${evaluation.rubric.colorAndLighting}/25`;
-    if (rubricSubject) rubricSubject.textContent = `${evaluation.rubric.subjectAndAccuracy}/25`;
-    
-    if (posterSuggestions && evaluation.suggestions) {
-      posterSuggestions.innerHTML = evaluation.suggestions.map(s => `<li>${highlightSuggestions(s)}</li>`).join('');
+
+  const game1PosterComparisons = document.getElementById('game1-poster-comparisons');
+  const game2PosterTechniques = document.getElementById('game2-poster-techniques');
+
+  if (currentActiveGameMode === 'GAME2' || gameMode === 'GAME2') {
+    if (game1PosterComparisons) game1PosterComparisons.style.display = 'none';
+    if (game2PosterTechniques) game2PosterTechniques.style.display = 'block';
+
+    let clearedStagesCount = 0;
+    try {
+      if (game2State) {
+        const st = typeof game2State === 'string' ? JSON.parse(game2State) : game2State;
+        clearedStagesCount = st.completed ? 3 : (st.currentTask ? st.currentTask - 1 : 0);
+      }
+    } catch(e) {}
+
+    if (posterCommentary) {
+      posterCommentary.textContent = `Keep Koopa 3 Trials Infiltration Completed! Total Score: ${score || 0} PTS. You mastered key prompt engineering concepts including the PTCF framework, checklist formatting, and adversarial roleplay!`;
     }
   } else {
-    // Game 2 Cyber Infiltration Report
-    if (posterCommentary) posterCommentary.textContent = `Keep Koopa 3 Trials Infiltration Completed! Final Score: ${score || 0} PTS.`;
-    if (rubricStyle) rubricStyle.textContent = `30/30`;
-    if (rubricComposition) rubricComposition.textContent = `30/30`;
-    if (rubricColor) rubricColor.textContent = `30/30`;
-    if (rubricSubject) rubricSubject.textContent = `30/30`;
-    if (posterSuggestions) posterSuggestions.innerHTML = `<li>Successfully conquered Keep Koopa interactive text prompt trials!</li>`;
+    if (game1PosterComparisons) game1PosterComparisons.style.display = 'grid';
+    if (game2PosterTechniques) game2PosterTechniques.style.display = 'none';
+
+    if (posterMasterImg) posterMasterImg.src = `assets/master-images/master-${activeMasterIndex || 1}.jpg`;
+    if (posterUserImg) {
+      posterUserImg.src = userImage ? `data:image/jpeg;base64,${userImage}` : NO_IMAGE_SVG;
+      posterUserImg.onerror = () => { posterUserImg.src = NO_IMAGE_SVG; };
+    }
+
+    if (evaluation && evaluation.rubric) {
+      if (posterCommentary) posterCommentary.textContent = evaluation.commentary;
+      if (rubricStyle) rubricStyle.textContent = `${evaluation.rubric.styleAndAesthetic}/25`;
+      if (rubricComposition) rubricComposition.textContent = `${evaluation.rubric.compositionAndLayout}/25`;
+      if (rubricColor) rubricColor.textContent = `${evaluation.rubric.colorAndLighting}/25`;
+      if (rubricSubject) rubricSubject.textContent = `${evaluation.rubric.subjectAndAccuracy}/25`;
+      
+      if (posterSuggestions && evaluation.suggestions) {
+        posterSuggestions.innerHTML = evaluation.suggestions.map(s => `<li>${highlightSuggestions(s)}</li>`).join('');
+      }
+    }
   }
 
   showSection('poster');
 
-  // Trigger Dramatic Odometer Shuffle & Laser Scan directly on the Poster!
+  // Wire Learn More button
+  const learnMorePromptBtn = document.getElementById('learn-more-prompt-btn');
+  if (learnMorePromptBtn) {
+    learnMorePromptBtn.onclick = () => {
+      window.open('https://cloud.google.com/discover/what-is-prompt-engineering#what-is-a-prompt-for-ai', '_blank', 'noopener,noreferrer');
+    };
+  }
+
+  // Trigger Dramatic Odometer Shuffle directly on the Poster!
   triggerDramaticResultScan(score || 0);
 }
 
