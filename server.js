@@ -29,7 +29,7 @@ if (!fs.existsSync(assetsDir)) {
   fs.mkdirSync(assetsDir, { recursive: true });
 }
 
-// Helper function to extract user email from Google Cloud IAP headers or dev fallback
+// Helper function to extract user email from Google Cloud IAP headers
 function getIapUserEmail(req) {
   // Cloud IAP sets 'x-goog-authenticated-user-email' header (format: "accounts.google.com:username@google.com")
   const iapHeader = req.headers['x-goog-authenticated-user-email'];
@@ -38,15 +38,15 @@ function getIapUserEmail(req) {
     if (email) return email.toLowerCase();
   }
   
-  // Custom header / query fallback for testing or proxy setups
+  // Custom header fallback for proxy setups
   const devHeader = req.headers['x-user-email'];
   if (devHeader) return devHeader.trim().toLowerCase();
 
-  // Query parameter fallback
+  // Explicit testing query parameter fallback
   if (req.query && req.query.email) return req.query.email.trim().toLowerCase();
 
-  // Default fallback if running unauthenticated locally
-  return 'roycheung@google.com';
+  // If no IAP header or explicit user email is supplied, return empty string
+  return '';
 }
 
 // IAP Admin Protection Middleware
