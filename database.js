@@ -2,7 +2,14 @@ const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const fs = require('fs');
 
-const dbPath = path.join(__dirname, 'game.db');
+const dbPath = process.env.DB_PATH || path.join(__dirname, 'game.db');
+
+// Ensure target directory exists (useful when mounting to /app/data via GCS volume)
+const dbDir = path.dirname(dbPath);
+if (!fs.existsSync(dbDir)) {
+  fs.mkdirSync(dbDir, { recursive: true });
+}
+
 const db = new sqlite3.Database(dbPath);
 
 function initDatabase() {
@@ -53,19 +60,19 @@ function initDatabase() {
 }
 
 /**
- * Clean up rooms and records older than 1 day
+ * Clean up heavy player payloads and images for rooms older than 1 day,
+ * while preserving room creation records indefinitely for analytics.
  */
 function purgeExpiredRooms() {
   return new Promise((resolve, reject) => {
     const oneDayAgo = "datetime('now', '-1 day')";
     db.serialize(() => {
+      // Purge heavy player submission payloads and image base64s from expired rooms
       db.run(`DELETE FROM players WHERE room_id IN (SELECT id FROM rooms WHERE created_at < ${oneDayAgo})`, (err) => {
         if (err) return reject(err);
-        db.run(`DELETE FROM rooms WHERE created_at < ${oneDayAgo}`, (err) => {
-          if (err) return reject(err);
-          console.log('Successfully purged expired rooms and player states (older than 24h).');
-          resolve();
-        });
+        console.log('Successfully purged heavy player submission states for expired rooms (>24h).');
+        console.log('Room creation records preserved permanently for analytics.');
+        resolve();
       });
     });
   });

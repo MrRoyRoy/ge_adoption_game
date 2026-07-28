@@ -23,8 +23,13 @@ echo "======================================================="
 echo "Checking project context..."
 gcloud config set project "${PROJECT_ID}"
 
+# Create GCS Bucket if it doesn't already exist
+BUCKET_NAME="${PROJECT_ID}-game-db"
+echo "Ensuring persistent storage bucket gs://${BUCKET_NAME} exists..."
+gcloud storage buckets create "gs://${BUCKET_NAME}" --location="${REGION}" --project="${PROJECT_ID}" 2>/dev/null || true
+
 # Trigger build and deployment
-echo "Triggering Cloud Run build and deployment from local source..."
+echo "Triggering Cloud Run build and deployment from local source with persistent GCS volume..."
 gcloud run deploy "${SERVICE_NAME}" \
   --source . \
   --region "${REGION}" \
@@ -32,7 +37,9 @@ gcloud run deploy "${SERVICE_NAME}" \
   --service-account "${SERVICE_ACCOUNT}" \
   --max-instances 1 \
   --allow-unauthenticated \
-  --set-env-vars="PROJECT_ID=${PROJECT_ID},LOCATION=global,IMAGEN_MODEL=gemini-3.1-flash-lite-image,GEMINI_MODEL=gemini-3.5-flash"
+  --add-volume="name=db-volume,type=cloud-storage,bucket=${BUCKET_NAME}" \
+  --add-volume-mount="volume=db-volume,mount-path=/app/data" \
+  --set-env-vars="PROJECT_ID=${PROJECT_ID},LOCATION=global,IMAGEN_MODEL=gemini-3.1-flash-lite-image,GEMINI_MODEL=gemini-3.5-flash,DB_PATH=/app/data/game.db"
 
 echo "======================================================="
 echo "🎉 DEPLOYMENT COMPLETE!"

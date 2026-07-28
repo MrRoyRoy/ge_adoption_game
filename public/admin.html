@@ -476,6 +476,35 @@
     </main>
   </div>
 
+  <!-- Overall Scoreboard Modal -->
+  <div id="overall-scoreboard-modal" class="modal-backdrop" style="display: none; z-index: 9998;">
+    <div class="glass-panel modal-content" style="max-width: 550px; width: 90%; padding: 2rem; border-color: var(--accent-purple); box-shadow: 0 0 25px rgba(188, 0, 221, 0.25);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <h3 class="brand-font" style="font-size: 1.2rem; color: var(--accent-cyan); display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+          🏆 OVERALL ROOM LEADERBOARD
+        </h3>
+        <button id="scoreboard-close-btn" class="btn btn-outline" style="padding: 0.2rem 0.6rem; font-size: 0.8rem;">✕</button>
+      </div>
+
+      <div style="max-height: 350px; overflow-y: auto; border-radius: 8px; border: 1px solid var(--glass-border); background: rgba(0,0,0,0.3);">
+        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem;">
+          <thead>
+            <tr style="border-bottom: 1px solid var(--glass-border); color: var(--accent-cyan); font-family: 'Orbitron', sans-serif; font-size: 0.75rem; background: rgba(0,240,255,0.05);">
+              <th style="padding: 0.75rem; text-align: center; width: 60px;">RANK</th>
+              <th style="padding: 0.75rem;">COMPETITOR</th>
+              <th style="padding: 0.75rem; text-align: right; width: 120px;">TOTAL SCORE</th>
+            </tr>
+          </thead>
+          <tbody id="overall-scoreboard-tbody">
+            <tr>
+              <td colspan="3" style="text-align: center; padding: 2rem; color: var(--text-muted);">Loading scoreboard data...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
   <!-- Premium Sci-Fi Custom Confirmation Modal (Admin Purple Accent) -->
   <div id="custom-confirm-modal" class="modal-backdrop" style="display: none; z-index: 9999;">
     <div class="glass-panel modal-content" style="max-width: 450px; width: 90%; text-align: center; padding: 2.5rem; border-color: var(--accent-purple); box-shadow: 0 0 20px rgba(188, 0, 221, 0.15);">

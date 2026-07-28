@@ -85,6 +85,13 @@
 - [x] Added `white-space: nowrap; flex-shrink: 0;` to enforce single-line layout for the `FINISHED: 0 / X` badge in the Admin Game 2 view.
 
 - [x] Added git release tag `v2.0.0` and tagged Cloud Run service/traffic revision (`v2-0-0`) with release labels for stable multi-game deployment.
+- [x] Configured Google Cloud HTTP(S) Load Balancer (`ge-game-backend`), static IP `136.69.108.176`, and Google-Managed SSL Certificate for custom subdomain `ge-game.royc-demo.com`.
+- [x] Mapped A-record for `ge-game.royc-demo.com` in Cloud DNS zone `royc-demo-com` (`playroy-beast` project).
+- [x] Enabled Google Identity-Aware Proxy (IAP) on global backend service with OAuth client credentials and enforced strict `@google.com` domain validation middleware on `/admin`.
+- [x] Implemented Analytics Portal displaying room creator charts and Hong Kong Timezone creation records (`Asia/Hong_Kong` HKT), with visibility restricted exclusively to **`roycheung@google.com`**.
+- [x] Updated `database.js` purge routine (`purgeExpiredRooms`) to retain `rooms` creation metadata permanently for continuous analytics tracking while pruning heavy player base64 image data after 24 hours.
+- [x] Configured Option 1 persistent storage by adding `DB_PATH` environment variable support in [database.js](file:///Users/roycheung/Desktop/dev-projects/ge-adoption-game/database.js) and updating [deploy.sh](file:///Users/roycheung/Desktop/dev-projects/ge-adoption-game/scripts/deploy.sh) to mount GCS Bucket `ge-edu-demo-game-db` at `/app/data` on Cloud Run.
+- [x] Fixed "Overall Scoreboard" button having no response by adding the missing `#overall-scoreboard-modal` container element to [admin.html](file:///Users/roycheung/Desktop/dev-projects/ge-adoption-game/public/admin.html).
 
 ### Active/Next Tasks
 - [ ] Monitor live Cloud Run server telemetry during active multi-game workshops.
