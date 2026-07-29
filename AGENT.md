@@ -92,7 +92,7 @@
 - [x] Updated `database.js` purge routine (`purgeExpiredRooms`) to retain `rooms` creation metadata permanently for continuous analytics tracking while pruning heavy player base64 image data after 24 hours.
 - [x] Configured Option 1 persistent storage by adding `DB_PATH` environment variable support in [database.js](file:///Users/roycheung/Desktop/dev-projects/ge-adoption-game/database.js) and updating [deploy.sh](file:///Users/roycheung/Desktop/dev-projects/ge-adoption-game/scripts/deploy.sh) to mount GCS Bucket `ge-edu-demo-game-db` at `/app/data` on Cloud Run.
 - [x] Fixed "Overall Scoreboard" button having no response by adding the missing `#overall-scoreboard-modal` container element to [admin.html](file:///Users/roycheung/Desktop/dev-projects/ge-adoption-game/public/admin.html).
-- [x] Migrated database layer from SQLite (`sqlite3`) to Google Cloud Firestore (`@google-cloud/firestore` SDK) to resolve idle database locks/freezes, enable serverless scaling on Cloud Run, and eliminate GCS FUSE volume mount dependencies.
+- [x] Fixed "Cannot GET /user" 404 error by adding explicit `/user` and `/user.html` Express route handlers in [server.js](file:///Users/roycheung/Desktop/dev-projects/ge-adoption-game/server.js) serving `public/user.html`.
 
 ### Active/Next Tasks
 - [ ] Monitor live Cloud Run server telemetry during active multi-game workshops.

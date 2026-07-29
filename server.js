@@ -133,6 +133,11 @@ app.get('/admin', requireGoogleDomainAdmin, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 
+// User Cockpit Routes
+app.get(['/user', '/user.html'], (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'user.html'));
+});
+
 // Game 2 Interactive Trial Tasks Config & Criteria
 const GAME2_TASKS = {
   1: {
