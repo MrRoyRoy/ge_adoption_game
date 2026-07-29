@@ -73,15 +73,20 @@ async function getRoom(roomId) {
  */
 async function upsertRoom(roomId, data) {
   const roomRef = firestore.collection(ROOMS_COLLECTION).doc(roomId);
-  await roomRef.set({
-    id: roomId,
-    status: 'LOBBY',
-    game_mode: 'GAME1',
-    active_master_index: 0,
-    created_by_email: 'anonymous@google.com',
-    created_at: new Date().toISOString(),
-    ...data
-  }, { merge: true });
+  const doc = await roomRef.get();
+  if (!doc.exists) {
+    await roomRef.set({
+      id: roomId,
+      status: 'LOBBY',
+      game_mode: 'GAME1',
+      active_master_index: 0,
+      created_by_email: 'anonymous@google.com',
+      created_at: new Date().toISOString(),
+      ...data
+    });
+  } else if (Object.keys(data).length > 0) {
+    await roomRef.update(data);
+  }
   return getRoom(roomId);
 }
 

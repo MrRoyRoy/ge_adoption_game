@@ -168,7 +168,12 @@ app.get('/admin', requireGoogleDomainAdmin, async (req, res) => {
   if (roomId) {
     try {
       const email = getIapUserEmail(req) || 'anonymous@google.com';
-      await dbModule.upsertRoom(roomId, { created_by_email: email });
+      const existing = await dbModule.getRoom(roomId);
+      if (!existing) {
+        await dbModule.upsertRoom(roomId, { created_by_email: email, status: 'LOBBY', game_mode: 'GAME1' });
+      } else {
+        await dbModule.updateRoom(roomId, { created_by_email: email });
+      }
     } catch (err) {
       console.error('Error pre-creating room on /admin GET:', err);
     }

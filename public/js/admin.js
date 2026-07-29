@@ -457,7 +457,9 @@ const handleRoomState = ({ status, gameMode, activeMasterIndex: currentMaster, a
   } 
   // Process Active Submissions View
   else if (status === 'PLAYING') {
-    if (selectedGameMode === 'GAME2') {
+    const currentMode = gameMode || selectedGameMode || 'GAME1';
+    selectedGameMode = currentMode;
+    if (currentMode === 'GAME2') {
       if (activeMasterTitle) activeMasterTitle.textContent = "Keep Koopa 3 Trials";
       if (activeMasterCategory) activeMasterCategory.textContent = "TEXT PROMPT TECHNIQUE";
       if (activeMasterImg) activeMasterImg.src = "/assets/lobby/banner-game2.jpg";

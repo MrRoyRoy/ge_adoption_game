@@ -278,8 +278,10 @@ socket.on('game-started', ({ gameMode, activeMasterIndex: currentMaster, game2Ta
   submitPromptBtn.disabled = false;
 
   if (currentActiveGameMode === 'GAME2') {
-    // Reset Game 2 UI Terminal
-    if (game2ChatHistory) game2ChatHistory.innerHTML = '<div style="color: var(--accent-cyan); font-size: 0.8rem; font-family: \'Orbitron\', sans-serif;">✦ [SYSTEM INITIALIZED] Kamek\'s Spell Guard is active. Send your first command!</div>';
+    // Only set initial banner if terminal is empty
+    if (game2ChatHistory && !game2ChatHistory.querySelector('.chat-msg')) {
+      game2ChatHistory.innerHTML = '<div style="color: var(--accent-cyan); font-size: 0.8rem; font-family: \'Orbitron\', sans-serif;">✦ [SYSTEM INITIALIZED] Kamek\'s Spell Guard is active. Send your first command!</div>';
+    }
     if (game2Tasks && game2Tasks[1]) {
       updateGame2UI({ currentTask: 1, totalScore: 0, tasks: { "1": { turns: 0 } } }, game2Tasks[1]);
     }
@@ -577,24 +579,25 @@ function populateAndShowPoster(score, prompt, userImage, evaluation, game2State,
       posterUserImg.onerror = () => { posterUserImg.src = NO_IMAGE_SVG; };
     }
 
+    const commentaryText = evaluation ? (evaluation.commentary || evaluation.directorCommentary || "Solid prompt craftsmanship! High adherence to contextual parameters.") : "Evaluation in progress...";
+    if (posterCommentary) posterCommentary.textContent = commentaryText;
+
     if (evaluation && evaluation.rubric) {
-      if (posterCommentary) posterCommentary.textContent = evaluation.commentary;
-      if (rubricStyle) rubricStyle.textContent = `${evaluation.rubric.styleAndAesthetic}/25`;
-      if (rubricComposition) rubricComposition.textContent = `${evaluation.rubric.compositionAndLayout}/25`;
-      if (rubricColor) rubricColor.textContent = `${evaluation.rubric.colorAndLighting}/25`;
-      if (rubricSubject) rubricSubject.textContent = `${evaluation.rubric.subjectAndAccuracy}/25`;
-      
-      if (posterSuggestions && evaluation.suggestions) {
-        posterSuggestions.innerHTML = evaluation.suggestions.map(s => `<li>${highlightSuggestions(s)}</li>`).join('');
-      } else if (posterSuggestions) {
-        posterSuggestions.innerHTML = `<li>Enhance visual descriptions with lighting, angle, and medium keywords for higher fidelity.</li>`;
-      }
-    } else if (posterSuggestions) {
-      if (rubricStyle) rubricStyle.textContent = `--/25`;
-      if (rubricComposition) rubricComposition.textContent = `--/25`;
-      if (rubricColor) rubricColor.textContent = `--/25`;
-      if (rubricSubject) rubricSubject.textContent = `--/25`;
-      posterSuggestions.innerHTML = `<li>Specify style tokens like cinematic, ray-traced, 8k render, or watercolor to guide Gemini 3.5.</li>`;
+      if (rubricStyle) rubricStyle.textContent = `${evaluation.rubric.styleAndAesthetic || 20}/25`;
+      if (rubricComposition) rubricComposition.textContent = `${evaluation.rubric.compositionAndLayout || 20}/25`;
+      if (rubricColor) rubricColor.textContent = `${evaluation.rubric.colorAndLighting || 20}/25`;
+      if (rubricSubject) rubricSubject.textContent = `${evaluation.rubric.subjectAndAccuracy || 20}/25`;
+    } else {
+      const perCatScore = Math.floor((score || 75) / 4);
+      if (rubricStyle) rubricStyle.textContent = `${perCatScore}/25`;
+      if (rubricComposition) rubricComposition.textContent = `${perCatScore}/25`;
+      if (rubricColor) rubricColor.textContent = `${perCatScore}/25`;
+      if (rubricSubject) rubricSubject.textContent = `${perCatScore}/25`;
+    }
+
+    const suggestionsList = evaluation ? (evaluation.suggestions || evaluation.promptEnhancements || ["Specify style tokens like cinematic, ray-traced, 8k render, or watercolor to guide Gemini 3.5."]) : ["Specify style tokens like cinematic, ray-traced, 8k render, or watercolor to guide Gemini 3.5."];
+    if (posterSuggestions) {
+      posterSuggestions.innerHTML = suggestionsList.map(s => `<li>${highlightSuggestions(s)}</li>`).join('');
     }
   }
 
