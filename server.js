@@ -89,6 +89,7 @@ app.get('/api/rooms', async (req, res) => {
     const rooms = await dbModule.getAllRooms();
     res.json(rooms);
   } catch (err) {
+    console.error('Error in /api/rooms:', err);
     res.status(500).json({ error: err.message });
   }
 });
@@ -103,6 +104,7 @@ app.get('/api/analytics/stats', async (req, res) => {
     const stats = await dbModule.getAnalyticsStats();
     res.json(stats);
   } catch (err) {
+    console.error('Error fetching analytics stats:', err);
     res.status(500).json({ error: err.message });
   }
 });

@@ -151,10 +151,7 @@ if (roomId && username) {
   // Register with Socket Server
   socket.emit('player-join', { roomId, username });
 } else {
-  showCustomNotification('Invalid configuration. Missing Room Code or Username.', 'error');
-  setTimeout(() => {
-    window.location.href = '/';
-  }, 2500);
+  showCustomNotification('Invalid room or username. Please check your link.', 'error');
 }
 
 // 1. Success Connection Callback
