@@ -37,22 +37,34 @@ async function purgeExpiredRooms() {
       return;
     }
 
+    let purgedCount = 0;
     for (const roomDoc of expiredRoomsSnap.docs) {
+      const roomData = roomDoc.data();
+      // Only purge if not already marked as archived/purged
+      if (roomData.is_purged) continue;
+
       const batch = firestore.batch();
       
-      // Delete all player documents in subcollection
       const playersSnap = await roomDoc.ref.collection(PLAYERS_COLLECTION).get();
+      const playerCount = playersSnap.size;
+
+      // Delete heavy player submission payloads (base64 images, evaluations, prompts)
       playersSnap.forEach(pDoc => {
         batch.delete(pDoc.ref);
       });
 
-      // Delete the room document itself
-      batch.delete(roomDoc.ref);
+      // Mark room document as archived/purged and record total_players to preserve historical analytics
+      batch.update(roomDoc.ref, {
+        is_purged: true,
+        archived_user_count: playerCount,
+        status: 'ARCHIVED'
+      });
 
       await batch.commit();
+      purgedCount++;
     }
 
-    console.log(`Successfully purged ${expiredRoomsSnap.size} expired room(s) and their player subcollections older than 24 hours.`);
+    console.log(`Successfully purged heavy submission payloads for ${purgedCount} expired room(s) (>24h), preserving room creation analytics.`);
   } catch (err) {
     console.error('Error purging expired rooms in Firestore:', err);
   }
@@ -234,6 +246,7 @@ async function getAnalyticsStats() {
   for (const doc of roomsSnap.docs) {
     const roomData = doc.data();
     const playersSnap = await doc.ref.collection(PLAYERS_COLLECTION).get();
+    const userCount = roomData.is_purged ? (roomData.archived_user_count || 0) : playersSnap.size;
     
     latestRooms.push({
       room_id: doc.id,
@@ -241,7 +254,7 @@ async function getAnalyticsStats() {
       game_mode: roomData.game_mode || 'GAME1',
       status: roomData.status || 'LOBBY',
       created_at: roomData.created_at,
-      user_count: playersSnap.size
+      user_count: userCount
     });
 
     const email = roomData.created_by_email;
