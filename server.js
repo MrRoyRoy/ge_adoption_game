@@ -94,6 +94,22 @@ app.get('/api/rooms', async (req, res) => {
   }
 });
 
+app.get('/api/rooms/check', async (req, res) => {
+  const roomId = req.query.room;
+  if (!roomId) return res.status(400).json({ exists: false, error: 'Room parameter missing' });
+  
+  try {
+    const room = await dbModule.getRoom(roomId);
+    if (!room) {
+      return res.json({ exists: false, message: 'Room does not exist' });
+    }
+    return res.json({ exists: true, status: room.status, gameMode: room.game_mode });
+  } catch (err) {
+    console.error('Error checking room existence:', err);
+    res.status(500).json({ exists: false, error: err.message });
+  }
+});
+
 app.get('/api/analytics/stats', async (req, res) => {
   const email = getIapUserEmail(req);
   if (!email.endsWith('@google.com')) {
@@ -612,14 +628,17 @@ async function sendRoomStateToAdmin(roomId) {
     const players = await dbModule.getRoomPlayers(roomId, 'score', 'desc');
     const activeMaster = masterLibrary.find(m => m.index === room.active_master_index) || masterLibrary[0];
 
-    io.to(`admin-${roomId}`).emit('room-state', {
+    const payload = {
       roomId: room.id,
       status: room.status,
       gameMode: room.game_mode,
       activeMasterIndex: room.active_master_index,
       activeMaster: activeMaster,
       players: players
-    });
+    };
+
+    io.to(`admin-${roomId}`).emit('room-state', payload);
+    io.to(roomId).emit('admin-room-state', payload);
   } catch (err) {
     console.error('sendRoomStateToAdmin error:', err);
   }

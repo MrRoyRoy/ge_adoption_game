@@ -439,7 +439,7 @@ socket.on('overall-scoreboard-data', ({ players }) => {
 });
 
 // Listen to Incoming Room State from server
-socket.on('room-state', ({ status, gameMode, activeMasterIndex: currentMaster, activeMaster: serverMaster, players }) => {
+const handleRoomState = ({ status, gameMode, activeMasterIndex: currentMaster, activeMaster: serverMaster, players }) => {
   activeMasterIndex = currentMaster;
   roomPlayers = players;
   if (playerCountDisplay) playerCountDisplay.textContent = players.length;
@@ -484,7 +484,10 @@ socket.on('room-state', ({ status, gameMode, activeMasterIndex: currentMaster, a
   else if (status === 'REVEAL') {
     showSection('reveal');
   }
-});
+};
+
+socket.on('room-state', handleRoomState);
+socket.on('admin-room-state', handleRoomState);
 
 function renderLobbyRoster(players) {
   if (startGameBtn) {
