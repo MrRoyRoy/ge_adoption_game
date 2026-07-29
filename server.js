@@ -147,7 +147,16 @@ app.post('/api/test-generate', async (req, res) => {
 });
 
 // Admin Route with Security Guard
-app.get('/admin', requireGoogleDomainAdmin, (req, res) => {
+app.get('/admin', requireGoogleDomainAdmin, async (req, res) => {
+  const roomId = req.query.room;
+  if (roomId) {
+    try {
+      const email = getIapUserEmail(req) || 'anonymous@google.com';
+      await dbModule.upsertRoom(roomId, { created_by_email: email });
+    } catch (err) {
+      console.error('Error pre-creating room on /admin GET:', err);
+    }
+  }
   res.sendFile(path.join(__dirname, 'public', 'admin.html'));
 });
 

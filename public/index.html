@@ -86,7 +86,25 @@
     </div>
   </div>
 
+  <!-- Custom Fly-In Toast Notification Container -->
+  <div id="custom-toast" class="custom-notification"></div>
+
   <script>
+    // Custom Toast Notification Utility
+    function showNotification(message, type = 'error') {
+      const toast = document.getElementById('custom-toast');
+      if (!toast) return alert(message);
+      
+      toast.className = `custom-notification ${type}`;
+      const icon = type === 'success' ? '✅' : '❌';
+      toast.innerHTML = `<span style="font-size: 1.2rem;">${icon}</span> <span>${message}</span>`;
+      
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3500);
+    }
+
     // Fetch active rooms on page load
     async function loadActiveRooms() {
       try {
@@ -123,7 +141,7 @@
       const user = document.getElementById('username').value.trim();
       
       if (!code || !user) {
-        alert('Please fill in both the Room Code and Username fields.');
+        showNotification('Please fill in both the Room Code and Username fields.', 'error');
         return;
       }
 
@@ -136,7 +154,7 @@
         const data = await res.json();
         
         if (!res.ok || !data.exists) {
-          alert('Room Code does not exist. Please verify the code with your host.');
+          showNotification('Room Code does not exist. Please check with your host.', 'error');
           joinBtn.disabled = false;
           joinBtn.textContent = 'Enter Arena';
           return;
@@ -146,7 +164,7 @@
         window.location.href = `/user?room=${encodeURIComponent(code)}&username=${encodeURIComponent(user)}`;
       } catch (err) {
         console.error('Error checking room:', err);
-        alert('Error validating room code. Please try again.');
+        showNotification('Error validating room code. Please try again.', 'error');
         joinBtn.disabled = false;
         joinBtn.textContent = 'Enter Arena';
       }
