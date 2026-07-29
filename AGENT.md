@@ -57,7 +57,13 @@
 - [x] Scaled the active playing submission count dial to a massive, visually dominant font size (`6rem`) with a glowing cybernetic design.
 - [x] Replaced the narrow active playing sidebar columns (from `82% 18%` to `74% 26%`) and expanded the competitor roster `#round-roster`'s vertical layout properties to utilize all vertical sidebar space without clipping.
 - [x] Configured competitor badges in `admin.js` to resize dynamically and wrap to the next line as a floating flex row layout, rather than being constrained to a single vertical column list.
-- [x] Enforced strict 15-character name truncation with `"..."` ellipsis inside competitor badges, while attaching a native hover tooltip `title` attribute to show the complete original username seamlessly.
+- [x] Migrated database layer from SQLite3 to Native Cloud Firestore (`@google-cloud/firestore`) with zero-downtime serverless scaling.
+- [x] Enabled Firestore API and initialized default native database in GCP project `ge-edu-demo`.
+- [x] Secured admin portal access via Google Cloud Identity-Aware Proxy (IAP) headers and JWT token verification.
+- [x] Fixed AI Director Commentary and Score rendering fallbacks across vision and simulated evaluation paths.
+- [x] Resolved admin page refresh behavior on "ARENA TRACK" to prevent unwanted lobby resets.
+- [x] Stabilized Game 2 terminal input and chat history across socket reconnections.
+- [x] Configured 24-hour cascading deletion policy in `database.js` to automatically purge expired rooms and player subcollections to minimize storage costs.
 - [x] Implemented Game 2 Admin End Submission 3-Stage Track (Spell-Lock, Airship Fleet, Bowser Dungeon) over an animated ambient backdrop with real-time player chips.
 - [x] Generated paper cutout character artwork (`bowser-cutout.jpg`, `peach-cutout.jpg`, `mario-cutout.jpg`) via `gemini-3.5-flash-image-lite` for Bowser (1st), Peach (2nd), and Mario (3rd) with floating CSS micro-animations on the Game 2 reveal podium.
 - [x] Removed header submission lock button in User Portal and added manual `PROCEED TO NEXT STAGE ➔` action bar allowing users ample time to review AI responses before advancing.
