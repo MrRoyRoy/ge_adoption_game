@@ -37,21 +37,22 @@ async function purgeExpiredRooms() {
       return;
     }
 
-    const batch = firestore.batch();
     for (const roomDoc of expiredRoomsSnap.docs) {
+      const batch = firestore.batch();
+      
+      // Delete all player documents in subcollection
       const playersSnap = await roomDoc.ref.collection(PLAYERS_COLLECTION).get();
       playersSnap.forEach(pDoc => {
-        // Clear heavy base64 and evaluation data but keep user row
-        batch.update(pDoc.ref, {
-          user_image_base64: null,
-          evaluation_json: null,
-          submitted_prompt: null
-        });
+        batch.delete(pDoc.ref);
       });
+
+      // Delete the room document itself
+      batch.delete(roomDoc.ref);
+
+      await batch.commit();
     }
 
-    await batch.commit();
-    console.log('Successfully purged heavy player submission states for expired rooms (>24h).');
+    console.log(`Successfully purged ${expiredRoomsSnap.size} expired room(s) and their player subcollections older than 24 hours.`);
   } catch (err) {
     console.error('Error purging expired rooms in Firestore:', err);
   }
